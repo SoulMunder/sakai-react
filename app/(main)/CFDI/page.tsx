@@ -102,6 +102,7 @@ export default function LazyLoadDemo() {
         first: 0,
         rows: 10,
         page: 0,
+        table: "",
         filters: {
             id: {
                 operator: FilterOperator.AND,
@@ -210,6 +211,7 @@ export default function LazyLoadDemo() {
     // Se hace fetchDataCFDI cada que lazyState cambia
     useEffect(() => {
         fetchDataCFDI();
+        console.log("Tabla en pagina", lazyState.table)
     }, [lazyState]);
 
     const onPage = (event: any) => {
