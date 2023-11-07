@@ -103,6 +103,8 @@ export default function LazyLoadDemo() {
         rows: 10,
         page: 0,
         table: "",
+        sortField: 'id',
+        sortOrder: null,
         filters: {
             id: {
                 operator: FilterOperator.AND,
@@ -211,7 +213,8 @@ export default function LazyLoadDemo() {
     // Se hace fetchDataCFDI cada que lazyState cambia
     useEffect(() => {
         fetchDataCFDI();
-        console.log("Tabla en pagina", lazyState.table)
+        console.log("Sorted value: ", lazyState.sortField)
+        console.log("Sorted order: ", lazyState.sortOrder)
     }, [lazyState]);
 
     const onPage = (event: any) => {
@@ -264,10 +267,29 @@ export default function LazyLoadDemo() {
 
     return (
         <div className="card">
-            <DataTable value={HistorialCFDI} dataKey="id" loading={loading} lazy filterDisplay="menu" paginator totalRecords={totalRecords} rows={lazyState.rows} rowsPerPageOptions={[10, 25, 50, 100]} first={lazyState.first} onPage={onPage} onFilter={onFilter} filters={lazyState.filters} tableStyle={{ minWidth: '50rem' }} paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
-                currentPageReportTemplate="{first} a {last} de {totalRecords}">
+            <DataTable 
+                value={HistorialCFDI} 
+                dataKey="id" 
+                onSort={onSort} 
+                sortField={lazyState.sortField} 
+                sortOrder={lazyState.sortOrder} 
+                loading={loading} 
+                lazy 
+                filterDisplay="menu" 
+                paginator 
+                totalRecords={totalRecords} 
+                rows={lazyState.rows} 
+                rowsPerPageOptions={[10, 25, 50, 100]} 
+                first={lazyState.first} 
+                onPage={onPage} 
+                onFilter={onFilter} 
+                filters={lazyState.filters} 
+                tableStyle={{ minWidth: '50rem' }} 
+                paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
+                currentPageReportTemplate="{first} a {last} de {totalRecords}"
+            >
 
-                <Column field="id" header="Id" filter ></Column>
+                <Column field="id" header="Id" filter sortable></Column>
                 <Column field="rfcReceptor" header="Rfc Receptor" filter filterPlaceholder="Search" ></Column>
                 <Column field="nombreReceptor" header="Nombre del receptor" filter filterPlaceholder="Search" ></Column>
                 <Column field="rfcEmisor" header="Rfc emisor" filter filterPlaceholder="Search" ></Column>
