@@ -109,7 +109,7 @@ export default function LazyLoadDemo() {
         filters: {
             id: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: '4155', matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
             },
             rfcEmisor: {
                 operator: FilterOperator.AND,
