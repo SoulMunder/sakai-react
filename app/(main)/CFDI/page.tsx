@@ -2,14 +2,13 @@
 
 import { CustomerService } from '../../../demo/service/CustomerService';
 import React, { useState, useEffect, lazy } from 'react';
-import { DataTable, DataTableFilterMeta } from 'primereact/datatable';
+import { DataTable, DataTableFilterMeta, DataTableSelectionChangeEvent, DataTableSelectAllChangeEvent,
+    DataTablePageEvent, DataTableSortEvent, DataTableFilterEvent } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { HistorialCFDIService } from '../../services/HistorialCFDI.service';
 import { HistorialCFDI } from '../../dto/HistorialCFDI.dto';
-import { Button } from 'primereact/button';
 import { Calendar, CalendarChangeEvent } from 'primereact/calendar';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import axios from 'axios';
 import { ApiEDI } from '../../config/ApiEDI';
 
 const baseURL = ApiEDI.urlEDI;
@@ -98,17 +97,19 @@ export default function LazyLoadDemo() {
     // variables de lazy load
     const [loading, setLoading] = useState(false);
     const [totalRecords, setTotalRecords] = useState(0);
+    const [selectedRows, setSelectedRows] = useState<HistorialCFDI[] | null>(null);
+    const [selectAll, setSelectAll] = useState<boolean>(false);
     const [lazyState, setlazyState] = useState({
         first: 0,
         rows: 10,
         page: 0,
         table: "",
         sortField: 'id',
-        sortOrder: null,
+        sortOrder: 1,
         filters: {
             id: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: '4155', matchMode: FilterMatchMode.CONTAINS }],
             },
             rfcEmisor: {
                 operator: FilterOperator.AND,
@@ -191,6 +192,9 @@ export default function LazyLoadDemo() {
     // funcion para sacar los datos de la api
     const fetchDataCFDI = async () => {
         setLoading(true);
+        if (lazyState.multiSortMeta) {
+            delete lazyState.multiSortMeta;
+        }
         const response = await HistorialCFDIService.getHistorial(lazyState);
         const formattedData = getHistorial(response.registrosPagina);
         setHistorialCFDI(formattedData);
@@ -213,12 +217,32 @@ export default function LazyLoadDemo() {
     // Se hace fetchDataCFDI cada que lazyState cambia
     useEffect(() => {
         fetchDataCFDI();
-        console.log("Sorted value: ", lazyState.sortField)
-        console.log("Sorted order: ", lazyState.sortOrder)
+        console.log(lazyState)
     }, [lazyState]);
 
     const onPage = (event: any) => {
         setlazyState(event);
+    };
+
+    const onSelectionChange = (event: DataTableSelectionChangeEvent) => {
+        const value = event.value;
+
+        setSelectedRows(value);
+        setSelectAll(value.length === totalRecords);
+    };
+
+    const onSelectAllChange = (event: DataTableSelectAllChangeEvent) => {
+        const selectAll = event.checked;
+
+        if (selectAll) {
+            // CustomerService.getCustomers().then((data) => {
+            //     setSelectAll(true);
+            //     setSelectedCustomers(data.customers);
+            // });
+        } else {
+            setSelectAll(false);
+            setSelectedRows([]);
+        }
     };
 
     const onSort = (event: any) => {
@@ -270,25 +294,30 @@ export default function LazyLoadDemo() {
             <DataTable 
                 value={HistorialCFDI} 
                 dataKey="id" 
-                onSort={onSort} 
-                sortField={lazyState.sortField} 
-                sortOrder={lazyState.sortOrder} 
                 loading={loading} 
                 lazy 
                 filterDisplay="menu" 
                 paginator 
-                totalRecords={totalRecords} 
-                rows={lazyState.rows} 
-                rowsPerPageOptions={[10, 25, 50, 100]} 
                 first={lazyState.first} 
-                onPage={onPage} 
                 onFilter={onFilter} 
+                onPage={onPage} 
+                rowsPerPageOptions={[10, 25, 50, 100]} 
+                rows={lazyState.rows} 
+                onSort={onSort} 
+                sortField={lazyState.sortField} 
+                sortOrder={lazyState.sortOrder}
+                selection={selectedRows}
+                onSelectionChange={onSelectionChange} 
+                selectAll={selectAll} 
+                onSelectAllChange={onSelectAllChange} 
+                size="normal"
+                totalRecords={totalRecords} 
                 filters={lazyState.filters} 
                 tableStyle={{ minWidth: '50rem' }} 
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
             >
-
+                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                 <Column field="id" header="Id" filter sortable></Column>
                 <Column field="rfcReceptor" header="Rfc Receptor" filter filterPlaceholder="Search" ></Column>
                 <Column field="nombreReceptor" header="Nombre del receptor" filter filterPlaceholder="Search" ></Column>
