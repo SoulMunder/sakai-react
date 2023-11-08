@@ -2,14 +2,17 @@
 
 import { CustomerService } from '../../../demo/service/CustomerService';
 import React, { useState, useEffect, lazy } from 'react';
-import { DataTable, DataTableFilterMeta, DataTableSelectionChangeEvent, DataTableSelectAllChangeEvent,
-    DataTablePageEvent, DataTableSortEvent, DataTableFilterEvent } from 'primereact/datatable';
+import {
+    DataTable, DataTableFilterMeta, DataTableSelectionChangeEvent, DataTableSelectAllChangeEvent,
+    DataTablePageEvent, DataTableSortEvent, DataTableFilterEvent
+} from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { HistorialCFDIService } from '../../services/HistorialCFDI.service';
 import { HistorialCFDI } from '../../dto/HistorialCFDI.dto';
 import { Calendar, CalendarChangeEvent } from 'primereact/calendar';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { ApiEDI } from '../../config/ApiEDI';
+import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 
 const baseURL = ApiEDI.urlEDI;
 
@@ -93,6 +96,30 @@ const defaultFilters: DataTableFilterMeta = {
 };
 
 export default function LazyLoadDemo() {
+    // Columnas a mostrar
+    // const columns = [
+    //     { field: 'id', header: 'Id' },
+    //     { field: 'rfcEmisor', header: 'RFC Emisor' },
+    //     { field: 'nombreEmisor', header: 'Nombre Emisor' },
+    //     { field: 'rfcReceptor', header: 'RFC Receptor' },
+    //     { field: 'nombreReceptor', header: 'Nombre Receptor' },
+    //     { field: 'serie', header: 'Serie' },
+    //     { field: 'folio', header: 'Folio' },
+    //     { field: 'dirXml', header: 'Dir XML' },
+    //     { field: 'oldFileName', header: 'Old File Name' },
+    //     { field: 'newFileName', header: 'New File Name' },
+    //     { field: 'fecha', header: 'Fecha' },
+    //     { field: 'hora', header: 'Hora' },
+    //     { field: 'uuid', header: 'UUID' },
+    //     { field: 'alertado', header: 'Alertado' },
+    //     { field: 'alertadoFecha', header: 'Alertado Fecha' },
+    //     { field: 'alertadoHora', header: 'Alertado Hora' },
+    //     { field: 'respuesta', header: 'Respuesta' },
+    //     { field: 'fechaRespuesta', header: 'Fecha Respuesta' },
+    //     { field: 'horaRespuesta', header: 'Hora Respuesta' },
+    // ];
+
+
     const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters);
     // variables de lazy load
     const [loading, setLoading] = useState(false);
@@ -270,7 +297,14 @@ export default function LazyLoadDemo() {
 
     // Reenderiza cada fila de la tabla dando formato a la fecha
     const dateBodyTemplate = (rowData: HistorialCFDI) => {
-        return formatDate(new Date(rowData.fecha));
+        const originalDate = new Date(rowData.fecha);
+        const year = originalDate.getFullYear();
+        const month = String(originalDate.getMonth() + 1).padStart(2, '0');
+        const day = String(originalDate.getDate()).padStart(2, '0');
+
+        return `${year}/${month}/${day}`;
+
+        // return formatDate(new Date(rowData.fecha));
     };
 
     // Funcion para desplegar el calendario en los filtros de las fechas
@@ -287,37 +321,73 @@ export default function LazyLoadDemo() {
     //     initFilters();
     // };
 
+    // Columnas a mostrar
+    const columns = [
+        // { field: 'id', header: 'Id', filter: true, sortable: true },
+        { field: 'rfcEmisor', header: 'RFC Emisor', filter: true },
+        { field: 'nombreEmisor', header: 'Nombre Emisor', filter: true },
+        { field: 'rfcReceptor', header: 'RFC Receptor', filter: true },
+        { field: 'nombreReceptor', header: 'Nombre Receptor', filter: true },
+        { field: 'serie', header: 'Serie', filter: true },
+        { field: 'folio', header: 'Folio', filter: true },
+        { field: 'dirXml', header: 'Dir XML', filter: true },
+        { field: 'oldFileName', header: 'Old File Name', filter: true },
+        { field: 'newFileName', header: 'New File Name', filter: true },
+        // { field: 'fecha', header: 'Fecha', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
+        // { field: 'hora', header: 'Hora', filter: true },
+        { field: 'uuid', header: 'UUID', filter: true },
+        // { field: 'alertado', header: 'Alertado', filter: true },
+        // { field: 'alertadoFecha', header: 'Alertado Fecha', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
+        // { field: 'alertadoHora', header: 'Alertado Hora', filter: true },
+        // { field: 'respuesta', header: 'Respuesta', filter: true },
+        // { field: 'fechaRespuesta', header: 'Fecha Respuesta', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
+        // { field: 'horaRespuesta', header: 'Hora Respuesta', filter: true },
+    ];
 
+
+    const [visibleColumns, setVisibleColumns] = useState(columns);
+
+    const onColumnToggle = (event: MultiSelectChangeEvent) => {
+        let selectedColumns = event.value;
+        let orderedSelectedColumns = columns.filter((col) => selectedColumns.some((sCol) => sCol.field === col.field));
+
+        setVisibleColumns(orderedSelectedColumns);
+    };
+
+    const header = <MultiSelect value={visibleColumns} options={columns} optionLabel="header" onChange={onColumnToggle} style={{ width: '400px' }} display="chip" />;
 
     return (
         <div className="card">
-            <DataTable 
-                value={HistorialCFDI} 
-                dataKey="id" 
-                loading={loading} 
-                lazy 
-                filterDisplay="menu" 
-                paginator 
-                first={lazyState.first} 
-                onFilter={onFilter} 
-                onPage={onPage} 
-                rowsPerPageOptions={[10, 25, 50, 100]} 
-                rows={lazyState.rows} 
-                onSort={onSort} 
-                sortField={lazyState.sortField} 
+            <DataTable
+                header={header}
+                value={HistorialCFDI}
+                dataKey="id"
+                loading={loading}
+                lazy
+                filterDisplay="menu"
+                paginator
+                first={lazyState.first}
+                onFilter={onFilter}
+                onPage={onPage}
+                rowsPerPageOptions={[10, 25, 50, 100]}
+                rows={lazyState.rows}
+                onSort={onSort}
+                sortField={lazyState.sortField}
                 sortOrder={lazyState.sortOrder}
                 selection={selectedRows}
-                onSelectionChange={onSelectionChange} 
-                selectAll={selectAll} 
-                onSelectAllChange={onSelectAllChange} 
-                size="normal"
-                totalRecords={totalRecords} 
-                filters={lazyState.filters} 
-                tableStyle={{ minWidth: '50rem' }} 
+                onSelectionChange={onSelectionChange}
+                selectAll={selectAll}
+                onSelectAllChange={onSelectAllChange}
+                size="small"
+                totalRecords={totalRecords}
+                filters={lazyState.filters}
+                tableStyle={{ minWidth: '50rem' }}
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
             >
                 <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                <Column field="id" header="Id" filter sortable></Column>
+                {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                 <Column field="id" header="Id" filter sortable></Column>
                 <Column field="rfcReceptor" header="Rfc Receptor" filter filterPlaceholder="Search" ></Column>
                 <Column field="nombreReceptor" header="Nombre del receptor" filter filterPlaceholder="Search" ></Column>
@@ -325,8 +395,16 @@ export default function LazyLoadDemo() {
                 <Column field="nombreEmisor" header="Nombre emisor" filter filterPlaceholder="Search" ></Column>
                 <Column field="serie" header="Serie" filter filterPlaceholder="Search" ></Column>
                 <Column field="folio" header="Folio" filter filterPlaceholder="Search" ></Column>
-                {/* <Column field="uuid" header="UUID" style={{ width: '25%' }} filter filterPlaceholder="Search" ></Column> */}
+                <Column field="fecha" header="Fecha" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column> */}
+
+                {visibleColumns.map((col) => (
+                    <Column key={col.field} field={col.field} header={col.header} filter={col.filter} />
+                ))}
+
                 <Column field="fecha" header="Fecha" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
+                <Column field="alertadoFecha" header="Fecha alertado" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
+                <Column field="fechaRespuesta" header="Fecha respuesta" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
+
             </DataTable>
         </div>
     );
