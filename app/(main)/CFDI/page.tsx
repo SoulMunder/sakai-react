@@ -15,6 +15,8 @@ import { ApiEDI } from '../../config/ApiEDI';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
+import { Dropdown } from 'primereact/dropdown';
+import { classNames } from 'primereact/utils';
 
 const baseURL = ApiEDI.urlEDI;
 
@@ -314,17 +316,50 @@ export default function LazyLoadDemo() {
 
     // Boton de descarga
     const downloadBodyTemplate = (rowData: any) => {
-        const handleDownload = () => {
-            // Llamar a la función de descarga con los parámetros de la fila
-            downloadFunction(rowData.id, rowData.rfcEmisor, rowData.folio);
+        // const handleDownload = () => {
+        //     // Llamar a la función de descarga con los parámetros de la fila
+        //     downloadFunction(rowData.id, rowData.rfcEmisor, rowData.folio);
+        // };
+        // return <Button type="button" icon="pi pi-download" rounded onClick={handleDownload}></Button>;
+
+        const handleDownload = (fileType: any) => {
+            // Llamar a la función de descarga con el tipo de archivo y otros parámetros de la fila
+            downloadFunction(rowData.id, rowData.rfcEmisor, rowData.folio, fileType);
         };
-        return <Button type="button" icon="pi pi-download" rounded onClick={handleDownload}></Button>;
+
+        const fileOptions = [
+            { label: 'PDF', value: 'pdf', icon: 'pi-file-pdf' },
+            { label: 'XML', value: 'xml', icon: 'pi-file' },
+        ];
+
+        const optionTemplate = (option: any) => (
+            <div className="p-d-flex p-ai-center">
+                <i className={classNames('pi', option.icon)} style={{ marginRight: '.5rem' }} />
+                <span>{option.label}</span>
+            </div>
+        );
+
+        return (
+            <Dropdown
+                options={fileOptions}
+                onChange={(e) => handleDownload(e.value)}
+                optionLabel="label"
+                placeholder={
+                    <div className="p-d-flex p-ai-center">
+                        <i className={classNames('pi', 'pi-download')} style={{ marginRight: '.5rem' }} />
+                        <span>Archivos</span>
+                    </div>
+                }
+                itemTemplate={optionTemplate}
+            />
+        );
+
     };
 
-    const downloadFunction = (id: string, rfc: string, folio: string) => {
+    const downloadFunction = (id: string, rfc: string, folio: string, fileType: string) => {
 
         console.log(id, rfc, folio)
-       
+
         // fetch(`servidor/ruta_de_descarga?id=${id}&rfc=${rfc}&folio=${folio}`)
         //     .then((response) => {
         //         // Manejar la respuesta del servidor
@@ -418,7 +453,7 @@ export default function LazyLoadDemo() {
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
             >
-                <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
+                {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} /> */}
                 <Column field="id" header="Id" filter sortable></Column>
                 {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                 <Column field="id" header="Id" filter sortable></Column>
@@ -437,7 +472,7 @@ export default function LazyLoadDemo() {
                 <Column field="fecha" header="Fecha" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
                 <Column field="alertadoFecha" header="Fecha alertado" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate}></Column>
                 <Column field="fechaRespuesta" header="Fecha respuesta" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
-                <Column headerStyle={{ width: '5rem', textAlign: 'center' }} bodyStyle={{ textAlign: 'center', overflow: 'visible' }} body={downloadBodyTemplate} />
+                <Column header="Acciones" headerStyle={{ width: '5rem', textAlign: 'center' }} bodyStyle={{ textAlign: 'center', overflow: 'visible' }} body={downloadBodyTemplate} />
             </DataTable>
         </div>
     );
