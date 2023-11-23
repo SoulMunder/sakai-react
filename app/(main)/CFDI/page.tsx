@@ -13,6 +13,8 @@ import { Calendar, CalendarChangeEvent } from 'primereact/calendar';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { ApiEDI } from '../../config/ApiEDI';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
+import { InputTextarea } from 'primereact/inputtextarea';
+import { Button } from 'primereact/button';
 
 const baseURL = ApiEDI.urlEDI;
 
@@ -43,7 +45,7 @@ const defaultFilters: DataTableFilterMeta = {
     },
     folio: {
         operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+        constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
     },
     dirXml: {
         operator: FilterOperator.AND,
@@ -96,29 +98,6 @@ const defaultFilters: DataTableFilterMeta = {
 };
 
 export default function LazyLoadDemo() {
-    // Columnas a mostrar
-    // const columns = [
-    //     { field: 'id', header: 'Id' },
-    //     { field: 'rfcEmisor', header: 'RFC Emisor' },
-    //     { field: 'nombreEmisor', header: 'Nombre Emisor' },
-    //     { field: 'rfcReceptor', header: 'RFC Receptor' },
-    //     { field: 'nombreReceptor', header: 'Nombre Receptor' },
-    //     { field: 'serie', header: 'Serie' },
-    //     { field: 'folio', header: 'Folio' },
-    //     { field: 'dirXml', header: 'Dir XML' },
-    //     { field: 'oldFileName', header: 'Old File Name' },
-    //     { field: 'newFileName', header: 'New File Name' },
-    //     { field: 'fecha', header: 'Fecha' },
-    //     { field: 'hora', header: 'Hora' },
-    //     { field: 'uuid', header: 'UUID' },
-    //     { field: 'alertado', header: 'Alertado' },
-    //     { field: 'alertadoFecha', header: 'Alertado Fecha' },
-    //     { field: 'alertadoHora', header: 'Alertado Hora' },
-    //     { field: 'respuesta', header: 'Respuesta' },
-    //     { field: 'fechaRespuesta', header: 'Fecha Respuesta' },
-    //     { field: 'horaRespuesta', header: 'Hora Respuesta' },
-    // ];
-
 
     const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters);
     // variables de lazy load
@@ -136,7 +115,7 @@ export default function LazyLoadDemo() {
         filters: {
             id: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: '415', matchMode: FilterMatchMode.CONTAINS }],
             },
             rfcEmisor: {
                 operator: FilterOperator.AND,
@@ -160,7 +139,7 @@ export default function LazyLoadDemo() {
             },
             folio: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
             },
             dirXml: {
                 operator: FilterOperator.AND,
@@ -227,7 +206,7 @@ export default function LazyLoadDemo() {
         setHistorialCFDI(formattedData);
         setTotalRecords(response.totalRegistros);
         setHistorialCFDI(response.registrosPagina);
-        console.log(HistorialCFDI)
+        // console.log(HistorialCFDI)
         setLoading(false);
     }
 
@@ -244,7 +223,7 @@ export default function LazyLoadDemo() {
     // Se hace fetchDataCFDI cada que lazyState cambia
     useEffect(() => {
         fetchDataCFDI();
-        console.log(lazyState)
+        console.log("Folio", lazyState.filters.folio)
     }, [lazyState]);
 
     const onPage = (event: any) => {
@@ -312,14 +291,54 @@ export default function LazyLoadDemo() {
         return <Calendar value={options.value} onChange={(e: CalendarChangeEvent) => options.filterCallback(e.value, options.index)} dateFormat="yy/mm/dd" placeholder="yyyy/mm/dd" mask="99/99/9999" />;
     };
 
-    // const initFilters = () => {
-    //     setFilters(null);
+    // Para agregar un input text en el filtro de folios
+
+    const [value, setValue] = useState('');
+
+    // const foliosFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
+    //     return <InputTextarea value={value} onChange={(e) => setValue(e.target.value)} rows={5} cols={30} placeholder='111111,222222,333333...'/>
     // };
 
-    // // Funcion para limpiar los filtros
-    // const clearFilter = () => {
-    //     initFilters();
-    // };
+    const foliosFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
+        return (
+            <InputTextarea
+                value={value}
+                onChange={(e) => setValue(e.target.value)}
+                rows={5}
+                cols={30}
+                placeholder='111111,222222,333333...'
+                onBlur={() => options.filterCallback(value)} // Aplica el filtro al perder el foco
+            />
+        );
+    };
+
+    // Boton de descarga
+    const downloadBodyTemplate = (rowData: any) => {
+        const handleDownload = () => {
+            // Llamar a la función de descarga con los parámetros de la fila
+            downloadFunction(rowData.id, rowData.rfcEmisor, rowData.folio);
+        };
+        return <Button type="button" icon="pi pi-download" rounded onClick={handleDownload}></Button>;
+    };
+
+    const downloadFunction = (id: string, rfc: string, folio: string) => {
+
+        console.log(id, rfc, folio)
+       
+        // fetch(`servidor/ruta_de_descarga?id=${id}&rfc=${rfc}&folio=${folio}`)
+        //     .then((response) => {
+        //         // Manejar la respuesta del servidor
+        //         if (response.ok) {
+        //             // Éxito, puedes manejar la respuesta como sea necesario
+        //         } else {
+        //             // Error, manejar el error según tus necesidades
+        //         }
+        //     })
+        //     .catch((error) => {
+        //         // Manejar errores de red u otros errores
+        //         console.error('Error en la petición:', error);
+        //     });
+    };
 
     // Columnas a mostrar
     const columns = [
@@ -329,7 +348,7 @@ export default function LazyLoadDemo() {
         { field: 'rfcReceptor', header: 'RFC Receptor', filter: true },
         { field: 'nombreReceptor', header: 'Nombre Receptor', filter: true },
         { field: 'serie', header: 'Serie', filter: true },
-        { field: 'folio', header: 'Folio', filter: true },
+        // { field: 'folio', header: 'Folio', filter: true },
         { field: 'dirXml', header: 'Dir XML', filter: true },
         { field: 'oldFileName', header: 'Old File Name', filter: true },
         { field: 'newFileName', header: 'New File Name', filter: true },
@@ -349,12 +368,26 @@ export default function LazyLoadDemo() {
 
     const onColumnToggle = (event: MultiSelectChangeEvent) => {
         let selectedColumns = event.value;
-        let orderedSelectedColumns = columns.filter((col) => selectedColumns.some((sCol) => sCol.field === col.field));
+        let orderedSelectedColumns = columns.filter((col) => selectedColumns.some((sCol: any) => sCol.field === col.field));
 
         setVisibleColumns(orderedSelectedColumns);
     };
 
-    const header = <MultiSelect value={visibleColumns} options={columns} optionLabel="header" onChange={onColumnToggle} style={{ width: '400px' }} display="chip" />;
+    const renderHeader = () => {
+        return (
+            <div className="flex flex-wrap gap-2 justify-content-between align-items-center">
+                <h4 className="m-0">Historial CFDI</h4>
+                <span className="p-input-icon-left">
+                    <i className="pi pi-search" />
+                    <MultiSelect value={visibleColumns} options={columns} optionLabel="header" onChange={onColumnToggle} style={{ width: '400px' }} display="chip" />
+                </span>
+            </div>
+        );
+    };
+
+    const header = renderHeader();
+
+    // const header = ;
 
     return (
         <div className="card">
@@ -400,11 +433,11 @@ export default function LazyLoadDemo() {
                 {visibleColumns.map((col) => (
                     <Column key={col.field} field={col.field} header={col.header} filter={col.filter} />
                 ))}
-
+                <Column field="folio" header="Folio" filter filterElement={foliosFilterTemplate}></Column>
                 <Column field="fecha" header="Fecha" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
-                <Column field="alertadoFecha" header="Fecha alertado" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
+                <Column field="alertadoFecha" header="Fecha alertado" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate}></Column>
                 <Column field="fechaRespuesta" header="Fecha respuesta" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
-
+                <Column headerStyle={{ width: '5rem', textAlign: 'center' }} bodyStyle={{ textAlign: 'center', overflow: 'visible' }} body={downloadBodyTemplate} />
             </DataTable>
         </div>
     );
