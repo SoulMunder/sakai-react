@@ -7,7 +7,7 @@ import {
     DataTablePageEvent, DataTableSortEvent, DataTableFilterEvent
 } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
-import { Ticket } from '../../dto/Ticket.dto';
+import { Ticket } from './Ticket.dto';
 import { Calendar, CalendarChangeEvent } from 'primereact/calendar';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { ApiEDI } from '../../config/ApiEDI';
@@ -17,7 +17,7 @@ import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
 import { downloadService } from '../../services/Descarga.service';
-import { TicketService } from '../../services/Ticket.service';
+import { TicketService } from './Ticket.service';
 
 export default function FillGrid() {
     // variables de lazy load
@@ -31,15 +31,15 @@ export default function FillGrid() {
         sortField: 'id',
         sortOrder: 1,
         filters: {
-            id: {
+            Id: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            clienteId: {
+            ClienteId: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            fileName: {
+            FileName: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
@@ -47,43 +47,43 @@ export default function FillGrid() {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            numDoc: {
+            NumDoc: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            sucursal: {
+            Sucursal: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            fecha: {
+            Fecha: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
             },
-            eliminado: {
+            Eliminado: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
-            procesado: {
+            Procesado: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
-            procesadoError: {
+            ProcesadoError: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            enviado: {
+            Enviado: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
-            enviadoError: {
+            EnviadoError: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            email: {
+            Email: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            apI_RecepcionArchivoId: {
+            API_RecepcionArchivoId: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             }

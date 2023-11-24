@@ -1,5 +1,5 @@
 import axios from "axios";
-import { ApiEDI } from '../config/ApiEDI';
+import { ApiEDI } from '../../config/ApiEDI';
 
 const baseURL = ApiEDI.urlEDI
 
