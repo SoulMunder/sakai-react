@@ -1,6 +1,5 @@
 "use client"
-
-import { CustomerService } from '../../../demo/service/CustomerService';
+import moment from 'moment';
 import React, { useState, useEffect, lazy } from 'react';
 import {
     DataTable, DataTableFilterMeta, DataTableSelectionChangeEvent, DataTableSelectAllChangeEvent,
@@ -10,10 +9,8 @@ import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Ticket } from './Ticket.dto';
 import { Calendar, CalendarChangeEvent } from 'primereact/calendar';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { ApiEDI } from '../../config/ApiEDI';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
-import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
+import { Tooltip } from 'primereact/tooltip';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
 import { downloadService } from '../../services/Descarga.service';
@@ -111,7 +108,7 @@ export default function FillGrid() {
     const getData = (data: Ticket[]) => {
         return data.map((d) => {
             // fechas de la tabla
-            d.fecha = new Date(d.fecha);
+            d.Fecha = new Date(d.Fecha);
             return d;
         });
     };
@@ -136,28 +133,17 @@ export default function FillGrid() {
         event['rows'] = lazyState.rows;
         event['page'] = lazyState.page;
         setlazyState(event);
-        setFilters(event.filters)
+        // setFilters(event.filters)
     };
 
     // Formatea la fecha para mostrarla en la tabla
     const formatDate = (value: Date) => {
-        return value.toLocaleDateString('es-MX', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
+        return moment(value).format('YYYY/MM/DD');
     };
 
     // Reenderiza las fechas en la tabla
     const dateBodyTemplate = (rowData: Ticket) => {
-        const originalDate = new Date(rowData.fecha);
-        const year = originalDate.getFullYear();
-        const month = String(originalDate.getMonth() + 1).padStart(2, '0');
-        const day = String(originalDate.getDate()).padStart(2, '0');
-
-        return `${year}/${month}/${day}`;
-
-        // return formatDate(new Date(rowData.fecha));
+        return formatDate(new Date(rowData.Fecha));
     };
 
     // Funcion para desplegar el calendario en los filtros de las fechas
@@ -165,48 +151,89 @@ export default function FillGrid() {
         return <Calendar value={options.value} onChange={(e: CalendarChangeEvent) => options.filterCallback(e.value, options.index)} dateFormat="yy/mm/dd" placeholder="yyyy/mm/dd" mask="99/99/9999" />;
     };
 
-    // Para agregar un input text en el filtro de folios
+    const procBodyTemplate = (rowData: Ticket) => {
+        let iconClass: string;
+        let iconTooltip: string;
 
-    const [value, setValue] = useState('');
+        if (rowData.Procesado === true) {
+            iconClass = 'pi pi-check'; // Icono de palomita
+            iconTooltip = 'Procesado';
+        } else if (rowData.Procesado === false) {
+            iconClass = 'pi pi-times'; // Icono de X
+            iconTooltip = 'No procesado';
+        } else {
+            iconClass = 'pi pi-question'; // Icono de interrogación
+            iconTooltip = 'Pendiente';
+        }
 
-    const foliosFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         return (
-            <InputTextarea
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                rows={5}
-                cols={30}
-                placeholder='111111,222222,333333...'
-                onBlur={() => options.filterCallback(value)} // Aplica el filtro al perder el foco
-            />
+            <div className="border-circle w-2rem h-2rem inline-flex font-bold justify-content-center align-items-center text-sm">
+                <i className={iconClass} style={{ fontSize: '1rem' }} title={iconTooltip}></i>
+            </div>
+        );
+    };
+
+    const sendBodyTemplate = (rowData: Ticket) => {
+        let iconClass: string;
+        let iconTooltip: string;
+
+        if (rowData.Enviado === true) {
+            iconClass = 'pi pi-check';
+            iconTooltip = 'Enviado';
+        } else if (rowData.Enviado === false) {
+            iconClass = 'pi pi-times';
+            iconTooltip = 'No Enviado';
+        } else {
+            iconClass = 'pi pi-question';
+            iconTooltip = 'Pendiente';
+        }
+
+        return (
+            <div className="border-circle w-2rem h-2rem inline-flex font-bold justify-content-center align-items-center text-sm">
+                <i className={iconClass} style={{ fontSize: '1rem' }} title={iconTooltip}></i>
+            </div>
+        );
+    };
+
+    const errorBodyTemplate = (rowData: Ticket) => {
+
+        let iconClass: string;
+        let iconTooltip: string;
+        if (rowData.ProcesadoError !== null) {
+            iconClass = 'pi pi-question';
+            iconTooltip = `${rowData.ProcesadoError}`;
+        } else {
+            iconClass = 'pi pi-times';
+            iconTooltip = `${rowData.ProcesadoError}`;
+        }
+
+        return (
+            <div className="border-circle w-2rem h-2rem inline-flex font-bold justify-content-center align-items-center text-sm">
+                <i className={iconClass} style={{ fontSize: '1rem' }} title={iconTooltip}></i>
+            </div>
         );
     };
 
     // Boton de descarga
     const downloadBodyTemplate = (rowData: any) => {
-        // const handleDownload = () => {
-        //     // Llamar a la función de descarga con los parámetros de la fila
-        //     downloadFunction(rowData.id, rowData.rfcEmisor, rowData.folio);
-        // };
-        // return <Button type="button" icon="pi pi-download" rounded onClick={handleDownload}></Button>;
-
-        const handleDownload = (fileType: any) => {
+        const handleDownload = (fileType: string) => {
             // Llamar a la función de descarga con el tipo de archivo y otros parámetros de la fila
-            downloadFunction("C:\\Users\\allre\\Downloads\\", "245151101073", "pdf");
+            downloadFunction(rowData.bckDir, rowData.FileName, fileType);
         };
-
+    
         const fileOptions = [
             { label: 'PDF', value: 'pdf', icon: 'pi-file-pdf' },
+            { label: 'Spool', value: 'spf', icon: 'pi-file' },
             { label: 'XML', value: 'xml', icon: 'pi-file' },
         ];
-
+    
         const optionTemplate = (option: any) => (
             <div className="p-d-flex p-ai-center">
                 <i className={classNames('pi', option.icon)} style={{ marginRight: '.5rem' }} />
                 <span>{option.label}</span>
             </div>
         );
-
+    
         return (
             <Dropdown
                 options={fileOptions}
@@ -221,26 +248,25 @@ export default function FillGrid() {
                 itemTemplate={optionTemplate}
             />
         );
-
     };
 
     const downloadFunction = async (rutaBCK: string, filename: string, extension: string) => {
-        await downloadService.downloadFile(rutaBCK, filename, extension);
+        // await downloadService.downloadFile(rutaBCK, filename, extension);
+        console.log(rutaBCK, filename, extension)
     };
 
     // Columnas a mostrar
     const columns = [
-        { field: 'rfcEmisor', header: 'RFC Emisor', filter: true },
-        { field: 'nombreEmisor', header: 'Nombre Emisor', filter: true },
-        { field: 'rfcReceptor', header: 'RFC Receptor', filter: true },
-        { field: 'nombreReceptor', header: 'Nombre Receptor', filter: true },
-        { field: 'serie', header: 'Serie', filter: true },
-        { field: 'dirXml', header: 'Dir XML', filter: true },
-        { field: 'oldFileName', header: 'Old File Name', filter: true },
-        { field: 'newFileName', header: 'New File Name', filter: true },
-        { field: 'uuid', header: 'UUID', filter: true },
+        // { field: 'ClienteId', header: 'Cliente ID', filter: true },
+        // { field: 'FileName', header: 'Archivo', filter: true },
+        { field: 'bckDir', header: 'Bck Dir', filter: true },
+        { field: 'NumDoc', header: 'Ticket', filter: true },
+        { field: 'Sucursal', header: 'Sucursal', filter: true },
+        // { field: 'ProcesadoError', header: 'Procesado Error', filter: true },
+        { field: 'Email', header: 'Email', filter: true },
+        { field: 'API_RecepcionArchivoId', header: 'API Recepcion Archivo ID', filter: true },
+        // { field: 'EnviadoError', header: 'Enviado Error', filter: true },
     ];
-
 
     const [visibleColumns, setVisibleColumns] = useState(columns);
 
@@ -254,7 +280,7 @@ export default function FillGrid() {
     const renderHeader = () => {
         return (
             <div className="flex flex-wrap gap-2 justify-content-between align-items-center">
-                <h4 className="m-0">Historial CFDI</h4>
+                <h4 className="m-0">Tickets</h4>
                 <span className="p-input-icon-left">
                     <i className="pi pi-search" />
                     <MultiSelect value={visibleColumns} options={columns} optionLabel="header" onChange={onColumnToggle} style={{ width: '400px' }} display="chip" />
@@ -292,14 +318,15 @@ export default function FillGrid() {
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
             >
-                <Column field="id" header="ID" filter></Column>
-                <Column field="clienteId" header="Cliente ID" filter></Column>
-                <Column field="fileName" header="File Name" filter></Column>
-                <Column field="bckDir" header="BCK Dir" filter></Column>
-                <Column field="numDoc" header="Num Doc" filter filterElement></Column>
-                <Column field="sucursal" header="Sucursal" filter filterElement></Column>
+                <Column field="Id" header="ID" filter></Column>
+                {visibleColumns.map((col) => (
+                    <Column key={col.field} field={col.field} header={col.header} filter={col.filter} />
+                ))}
+                <Column field='Enviado' header='Enviado' filter body={sendBodyTemplate}></Column>
+                <Column field='Procesado' header='Procesado' filter body={procBodyTemplate}></Column>
+                <Column field='ProcesadoError' header='Error' filter body={errorBodyTemplate}></Column>
                 <Column
-                    field="fecha"
+                    field="Fecha"
                     header="Fecha"
                     dataType="date"
                     body={dateBodyTemplate}

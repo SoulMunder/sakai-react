@@ -1,108 +1,23 @@
 "use client"
 
-import { CustomerService } from '../../../demo/service/CustomerService';
+import moment from 'moment';
 import React, { useState, useEffect, lazy } from 'react';
 import {
     DataTable, DataTableFilterMeta, DataTableSelectionChangeEvent, DataTableSelectAllChangeEvent,
     DataTablePageEvent, DataTableSortEvent, DataTableFilterEvent
 } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
-import { HistorialCFDIService } from '../../services/HistorialCFDI.service';
-import { HistorialCFDI } from '../../dto/HistorialCFDI.dto';
+import { HistorialCFDIService } from './HistorialCFDI.service';
+import { HistorialCFDI } from './HistorialCFDI.dto';
 import { Calendar, CalendarChangeEvent } from 'primereact/calendar';
 import { FilterMatchMode, FilterOperator } from 'primereact/api';
-import { ApiEDI } from '../../config/ApiEDI';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { InputTextarea } from 'primereact/inputtextarea';
-import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
 import { downloadService } from '../../services/Descarga.service';
 
-const baseURL = ApiEDI.urlEDI;
-
-const defaultFilters: DataTableFilterMeta = {
-    id: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    rfcEmisor: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    nombreEmisor: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    rfcReceptor: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    nombreReceptor: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    serie: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    folio: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
-    },
-    dirXml: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    oldFileName: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    newFileName: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    fecha: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
-    },
-    hora: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    uuid: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    alertado: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    alertadoFecha: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    alertadoHora: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    respuesta: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-    fechaRespuesta: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
-    },
-    horaRespuesta: {
-        operator: FilterOperator.AND,
-        constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
-    },
-};
-
 export default function LazyLoadDemo() {
-
-    const [filters, setFilters] = useState<DataTableFilterMeta>(defaultFilters);
     // variables de lazy load
     const [loading, setLoading] = useState(false);
     const [totalRecords, setTotalRecords] = useState(0);
@@ -113,82 +28,82 @@ export default function LazyLoadDemo() {
         rows: 10,
         page: 0,
         table: "",
-        sortField: 'id',
+        sortField: 'Id',
         sortOrder: 1,
         filters: {
-            id: {
+            Id: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: '415', matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: '415', matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            rfcEmisor: {
+            RfcEmisor: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            nombreEmisor: {
+            NombreEmisor: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            rfcReceptor: {
+            RfcReceptor: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            nombreReceptor: {
+            NombreReceptor: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            serie: {
+            Serie: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            folio: {
-                operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
-            },
-            dirXml: {
+            Folio: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
             },
-            oldFileName: {
+            DirXml: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            newFileName: {
+            OldFileName: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            fecha: {
+            NewFileName: {
+                operator: FilterOperator.AND,
+                constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
+            },
+            Fecha: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
             },
-            hora: {
+            Hora: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            uuid: {
+            Uuid: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            alertado: {
+            Alertado: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
-            alertadoFecha: {
+            AlertadoFecha: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
-            alertadoHora: {
+            AlertadoHora: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            respuesta: {
+            Respuesta: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
-            fechaRespuesta: {
+            FechaRespuesta: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
-            horaRespuesta: {
+            HoraRespuesta: {
                 operator: FilterOperator.AND,
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
@@ -216,9 +131,9 @@ export default function LazyLoadDemo() {
     // Hace el casteo de la fecha
     const getHistorial = (data: HistorialCFDI[]) => {
         return data.map((d) => {
-            d.fecha = new Date(d.fecha);
-            d.alertadoFecha = new Date(d.alertadoFecha);
-            d.fechaRespuesta = new Date(d.fechaRespuesta);
+            d.Fecha = new Date(d.Fecha);
+            d.AlertadoFecha = new Date(d.AlertadoFecha);
+            d.FechaRespuesta = new Date(d.FechaRespuesta);
             return d;
         });
     };
@@ -226,7 +141,6 @@ export default function LazyLoadDemo() {
     // Se hace fetchDataCFDI cada que lazyState cambia
     useEffect(() => {
         fetchDataCFDI();
-        console.log("Folio", lazyState.filters.folio)
     }, [lazyState]);
 
     const onPage = (event: any) => {
@@ -265,28 +179,16 @@ export default function LazyLoadDemo() {
         event['rows'] = lazyState.rows;
         event['page'] = lazyState.page;
         setlazyState(event);
-        setFilters(event.filters)
     };
 
     // Formatea la fecha para mostrarla en la tabla
     const formatDate = (value: Date) => {
-        return value.toLocaleDateString('es-MX', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric'
-        });
+        return moment(value).format('YYYY/MM/DD'); 
     };
 
     // Reenderiza cada fila de la tabla dando formato a la fecha
     const dateBodyTemplate = (rowData: HistorialCFDI) => {
-        const originalDate = new Date(rowData.fecha);
-        const year = originalDate.getFullYear();
-        const month = String(originalDate.getMonth() + 1).padStart(2, '0');
-        const day = String(originalDate.getDate()).padStart(2, '0');
-
-        return `${year}/${month}/${day}`;
-
-        // return formatDate(new Date(rowData.fecha));
+        return formatDate(new Date(rowData.Fecha));
     };
 
     // Funcion para desplegar el calendario en los filtros de las fechas
@@ -379,18 +281,18 @@ export default function LazyLoadDemo() {
     // Columnas a mostrar
     const columns = [
         // { field: 'id', header: 'Id', filter: true, sortable: true },
-        { field: 'rfcEmisor', header: 'RFC Emisor', filter: true },
-        { field: 'nombreEmisor', header: 'Nombre Emisor', filter: true },
-        { field: 'rfcReceptor', header: 'RFC Receptor', filter: true },
-        { field: 'nombreReceptor', header: 'Nombre Receptor', filter: true },
-        { field: 'serie', header: 'Serie', filter: true },
+        { field: 'RfcEmisor', header: 'RFC Emisor', filter: false },
+        { field: 'NombreEmisor', header: 'Nombre Emisor', filter: true },
+        { field: 'RfcReceptor', header: 'RFC Receptor', filter: true },
+        { field: 'NombreReceptor', header: 'Nombre Receptor', filter: true },
+        { field: 'Serie', header: 'Serie', filter: true },
         // { field: 'folio', header: 'Folio', filter: true },
-        { field: 'dirXml', header: 'Dir XML', filter: true },
-        { field: 'oldFileName', header: 'Old File Name', filter: true },
-        { field: 'newFileName', header: 'New File Name', filter: true },
+        { field: 'DirXml', header: 'Dir XML', filter: true },
+        { field: 'OldFileName', header: 'Old File Name', filter: true },
+        { field: 'NewFileName', header: 'New File Name', filter: true },
         // { field: 'fecha', header: 'Fecha', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
         // { field: 'hora', header: 'Hora', filter: true },
-        { field: 'uuid', header: 'UUID', filter: true },
+        { field: 'Uuid', header: 'UUID', filter: true },
         // { field: 'alertado', header: 'Alertado', filter: true },
         // { field: 'alertadoFecha', header: 'Alertado Fecha', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
         // { field: 'alertadoHora', header: 'Alertado Hora', filter: true },
@@ -455,7 +357,7 @@ export default function LazyLoadDemo() {
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
             >
                 {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} /> */}
-                <Column field="id" header="Id" filter sortable></Column>
+                <Column field="Id" header="Id" filter sortable></Column>
                 {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
                 <Column field="id" header="Id" filter sortable></Column>
                 <Column field="rfcReceptor" header="Rfc Receptor" filter filterPlaceholder="Search" ></Column>
@@ -469,10 +371,10 @@ export default function LazyLoadDemo() {
                 {visibleColumns.map((col) => (
                     <Column key={col.field} field={col.field} header={col.header} filter={col.filter} />
                 ))}
-                <Column field="folio" header="Folio" filter filterElement={foliosFilterTemplate}></Column>
-                <Column field="fecha" header="Fecha" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
-                <Column field="alertadoFecha" header="Fecha alertado" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate}></Column>
-                <Column field="fechaRespuesta" header="Fecha respuesta" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
+                <Column field="Folio" header="Folio" filter filterElement={foliosFilterTemplate}></Column>
+                <Column field="Fecha" header="Fecha" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
+                <Column field="AlertadoFecha" header="Fecha alertado" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate}></Column>
+                <Column field="FechaRespuesta" header="Fecha respuesta" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column>
                 <Column header="Acciones" headerStyle={{ width: '5rem', textAlign: 'center' }} bodyStyle={{ textAlign: 'center', overflow: 'visible' }} body={downloadBodyTemplate} />
             </DataTable>
         </div>
