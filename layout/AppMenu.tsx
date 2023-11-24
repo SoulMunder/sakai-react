@@ -27,6 +27,12 @@ const AppMenu = () => {
             ]
         },
         {
+            label: 'Adidas',
+            items: [
+                { label: 'Tickets', icon: 'pi pi-fw pi-ticket', to: '/Tickets' },
+            ]
+        },
+        {
             label: 'Cancelaciones',
             items: [
                 { label: 'PrimeIcons', icon: 'pi pi-fw pi-prime', to: '/utilities/icons' },

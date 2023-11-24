@@ -1,3 +1,3 @@
 export const ApiEDI = {
-    urlEDI: "https:/localhost:7137/api/edi"
+    urlEDI: "https:/localhost:7137/api"
 }

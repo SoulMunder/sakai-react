@@ -17,6 +17,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Button } from 'primereact/button';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
+import { downloadService } from '../../services/Descarga.service';
 
 const baseURL = ApiEDI.urlEDI;
 
@@ -324,7 +325,7 @@ export default function LazyLoadDemo() {
 
         const handleDownload = (fileType: any) => {
             // Llamar a la función de descarga con el tipo de archivo y otros parámetros de la fila
-            downloadFunction(rowData.id, rowData.rfcEmisor, rowData.folio, fileType);
+            downloadFunction("C:\\Users\\allre\\Downloads\\", "245151101073", "pdf");
         };
 
         const fileOptions = [
@@ -356,9 +357,9 @@ export default function LazyLoadDemo() {
 
     };
 
-    const downloadFunction = (id: string, rfc: string, folio: string, fileType: string) => {
+    const downloadFunction = async (rutaBCK: string, filename: string, extension: string) => {
 
-        console.log(id, rfc, folio)
+        var archivo =  await downloadService.downloadFile(rutaBCK, filename, extension);
 
         // fetch(`servidor/ruta_de_descarga?id=${id}&rfc=${rfc}&folio=${folio}`)
         //     .then((response) => {

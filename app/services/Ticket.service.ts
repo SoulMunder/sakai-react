@@ -1,0 +1,17 @@
+import axios from "axios";
+import { ApiEDI } from '../config/ApiEDI';
+
+const baseURL = ApiEDI.urlEDI
+
+export const TicketService = {
+    getData: async (params: Object) => {
+        params.table = "Tk_Recepcion";
+        try {
+            const response = await axios.post(`${baseURL}/Ticket/FillGridTk_recepcion`, params);
+            return response.data;
+        } catch (error) {
+            console.error('Error al enviar filtros:', error);
+            throw error; 
+        }
+    }
+}
