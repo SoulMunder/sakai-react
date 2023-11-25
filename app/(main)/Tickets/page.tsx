@@ -15,6 +15,9 @@ import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
 import { downloadService } from '../../services/Descarga.service';
 import { TicketService } from './Ticket.service';
+import { Button } from 'primereact/button';
+import { Dialog } from 'primereact/dialog';
+import { InputTextarea } from 'primereact/inputtextarea';
 
 export default function FillGrid() {
     // variables de lazy load
@@ -214,39 +217,104 @@ export default function FillGrid() {
         );
     };
 
+    // Modal para editar email
+    const sendEmailBodyTemplate = (rowData: Ticket) => {
+        const [ticketDialog, setTicketDialog] = useState<boolean>(false);
+        const [ticket, setTicket] = useState({ email: '' });
+
+        const openNew = () => {
+            setTicket({ email: rowData.Email });
+            setTicketDialog(true);
+        };
+
+        const hideDialog = () => {
+            setTicketDialog(false);
+        };
+
+        const saveEmail = async () => {
+            console.log("Contenido del InputTextarea:", ticket.email);
+            try {
+                await TicketService.sendEmail(rowData.Id, ticket.email);
+                console.log('Correo electrónico enviado exitosamente');
+            } catch (error) {
+                console.error('Error al enviar el correo electrónico:', error);
+            }
+            setTicketDialog(false);
+        };
+
+        const ticketDialogFooter = (
+            <React.Fragment>
+                <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
+                <Button label="Enviar" icon="pi pi-check" onClick={saveEmail} />
+            </React.Fragment>
+        );
+
+        return (
+            <>
+                <Button icon="pi pi-send" rounded outlined className="mr-2" onClick={openNew}/>
+                <Dialog
+                    visible={ticketDialog}
+                    style={{ width: '32rem' }}
+                    header="Reenviar ticket"
+                    modal
+                    className="p-fluid"
+                    footer={ticketDialogFooter}
+                    onHide={hideDialog}
+                >
+                    <div className="field">
+                        <label htmlFor="description" className="font-bold">
+                            Puede agregar/editar 1 o varios correos separados por ';'
+                        </label>
+                        <InputTextarea
+                            id="description"
+                            value={ticket.email}
+                            onChange={(e) => setTicket({ ...ticket, email: e.target.value })}
+                            required
+                            rows={3}
+                            cols={20}
+                        />
+                    </div>
+                </Dialog>
+            </>
+        );
+    }
+
     // Boton de descarga
     const downloadBodyTemplate = (rowData: any) => {
+
         const handleDownload = (fileType: string) => {
             // Llamar a la función de descarga con el tipo de archivo y otros parámetros de la fila
             downloadFunction(rowData.bckDir, rowData.FileName, fileType);
         };
-    
+
         const fileOptions = [
             { label: 'PDF', value: 'pdf', icon: 'pi-file-pdf' },
             { label: 'Spool', value: 'spf', icon: 'pi-file' },
             { label: 'XML', value: 'xml', icon: 'pi-file' },
         ];
-    
+
         const optionTemplate = (option: any) => (
-            <div className="p-d-flex p-ai-center">
+            <>
                 <i className={classNames('pi', option.icon)} style={{ marginRight: '.5rem' }} />
                 <span>{option.label}</span>
-            </div>
+            </>
         );
-    
+
         return (
-            <Dropdown
-                options={fileOptions}
-                onChange={(e) => handleDownload(e.value)}
-                optionLabel="label"
-                placeholder={
-                    <div className="p-d-flex p-ai-center">
-                        <i className={classNames('pi', 'pi-download')} style={{ marginRight: '.5rem' }} />
-                        <span>Archivos</span>
-                    </div>
-                }
-                itemTemplate={optionTemplate}
-            />
+            <div>
+                <Dropdown
+                    options={fileOptions}
+                    onChange={(e) => handleDownload(e.value)}
+                    optionLabel="label"
+                    placeholder={
+                        <div className="p-d-flex p-ai-center">
+                            <i className={classNames('pi', 'pi-download')} style={{ marginRight: '.5rem' }} />
+                            <span>Archivos</span>
+                        </div>
+                    }
+                    itemTemplate={optionTemplate}
+                />
+            </div>
         );
     };
 
@@ -291,14 +359,12 @@ export default function FillGrid() {
 
     const header = renderHeader();
 
-    // const header = ;
-
     return (
         <div className="card">
             <DataTable
                 header={header}
                 value={Data}
-                dataKey="id"
+                dataKey="Id"
                 loading={loading}
                 lazy
                 filterDisplay="menu"
@@ -318,6 +384,8 @@ export default function FillGrid() {
                 paginatorTemplate="RowsPerPageDropdown FirstPageLink PrevPageLink CurrentPageReport NextPageLink LastPageLink"
                 currentPageReportTemplate="{first} a {last} de {totalRecords}"
             >
+                <Column headerStyle={{ width: '5rem', textAlign: 'center' }} bodyStyle={{ textAlign: 'center', overflow: 'visible' }} body={downloadBodyTemplate} />
+                <Column headerStyle={{ width: '5rem', textAlign: 'center' }} bodyStyle={{ textAlign: 'center', overflow: 'visible' }} body={sendEmailBodyTemplate} />
                 <Column field="Id" header="ID" filter></Column>
                 {visibleColumns.map((col) => (
                     <Column key={col.field} field={col.field} header={col.header} filter={col.filter} />
@@ -333,7 +401,6 @@ export default function FillGrid() {
                     filter
                     filterElement={dateFilterTemplate}
                 ></Column>
-                <Column header="Acciones" headerStyle={{ width: '5rem', textAlign: 'center' }} bodyStyle={{ textAlign: 'center', overflow: 'visible' }} body={downloadBodyTemplate} />
             </DataTable>
         </div>
     );

@@ -13,5 +13,19 @@ export const TicketService = {
             console.error('Error al enviar filtros:', error);
             throw error; 
         }
+    },
+    sendEmail: async (Id: number, Email: string) => {
+        axios.get(`${baseURL}/Ticket/EnviarTicket`, {
+            params: {
+                id: Id,
+                email: Email,
+            },
+        })
+        .then(response => {
+            console.log('Respuesta de la solicitud:', response.data);
+        })
+        .catch(error => {
+            console.error('Error al realizar la solicitud:', error);
+        });
     }
 }
