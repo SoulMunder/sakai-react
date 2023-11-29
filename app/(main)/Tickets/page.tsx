@@ -262,11 +262,12 @@ export default function FillGrid() {
                     onHide={hideDialog}
                 >
                     <div className="field">
-                        <label htmlFor="description" className="font-bold">
-                            Puede agregar/editar 1 o varios correos separados por ';'
+                        <label htmlFor="email" className="font-bold">
+                            Puede agregar/editar 1 o varios correos separados por `&apos;`
                         </label>
                         <InputTextarea
-                            id="description"
+                            id="email"
+                            placeholder='Ej1: c1@test.com / Ej2: c1@test.com;c2@test.com'
                             value={ticket.email}
                             onChange={(e) => setTicket({ ...ticket, email: e.target.value })}
                             required

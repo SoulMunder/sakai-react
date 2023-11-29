@@ -1,7 +1,7 @@
 import axios from "axios";
-import { ApiEDI } from "../config/ApiEDI";
+import { Api } from "../config/ApiEDI";
 
-const baseURL = ApiEDI.urlEDI
+const baseURL = Api.url
 
 export const HistorialEDIService =  {
     getHistorial: async() => {
