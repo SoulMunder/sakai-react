@@ -7,6 +7,7 @@ export const LayoutProvider = ({ children }: ChildContainerProps) => {
     const [layoutConfig, setLayoutConfig] = useState<LayoutConfig>({
         ripple: false,
         inputStyle: 'outlined',
+        //Overlay es el que esta completo
         menuMode: 'static',
         colorScheme: 'light',
         theme: 'lara-light-indigo',
