@@ -12,8 +12,8 @@ export const loginService = {
                 password
             });
             // const { token } = response.data.Token;
-            window.localStorage.setItem('token', response.data.Token);
-            // console.log(response.data.Token)
+            window.localStorage.setItem('token', response.data.Token)
+            console.log(response.data)
             // Redirigir al usuario o manejar el estado de inicio de sesión
         } catch (error) {
             console.error('Error de autenticación', error);
