@@ -20,10 +20,33 @@ const AppMenu = () => {
             items: [{ label: 'Usuarios', icon: 'pi pi-users', to: '' }]
         },
         {
+            label: 'Certificados',
+            items: [{ label: 'Certificados', icon: 'pi pi-building', to: '' }]
+        },
+        {
             label: 'Addenda',
             items: [
                 { label: 'EDI', icon: 'pi pi-fw pi-briefcase', to: '/EDI' },
                 { label: 'CFDI', icon: 'pi pi-file-o', to: '/CFDI' },
+            ]
+        },
+        {
+            label: 'Facturación electronica',
+            items: [
+                { label: 'Carga manual', icon: 'pi pi-upload', to: '' },
+                { label: 'Monitor de archivos', icon: 'pi pi-list', to: '' },
+                { label: 'Documentos timbrados', icon: 'pi pi-bell', to: '' },
+                { label: 'Notas de venta', icon: 'pi pi-file', to: '' },
+                { label: 'Addenda comercial', icon: 'pi pi-file', to: '' },
+                { label: 'Reglas de distribución', icon: 'pi pi-file', to: '' }                
+            ]
+        },
+        {
+            label: 'Cancelacion de facturas',
+            items: [
+                { label: 'Cargar layout', icon: 'pi pi-fw pi-upload', to: '' },
+                { label: 'Archivos cargados', icon: 'pi pi-file-o', to: '' },
+                { label: 'Estatus cancelados', icon: 'pi pi-times', to: '' }
             ]
         },
         {

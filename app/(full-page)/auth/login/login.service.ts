@@ -1,5 +1,5 @@
 import axios from "axios";
-import { Api } from "../../../config/Api"
+import { Api, generalRequest } from "../../../config/Api"
 
 const baseUrl = Api.url
 
@@ -7,7 +7,7 @@ export const loginService = {
     handleLogin: async (username: string, password: string, event: React.FormEvent) => {
         event.preventDefault();
         try {
-            const response = await axios.post(`${baseUrl}/Auth/login`, {
+            const response = await generalRequest.post(`/Auth/login`, {
                 username,
                 password
             });
