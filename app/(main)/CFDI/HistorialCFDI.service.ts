@@ -1,5 +1,4 @@
-import axios from "axios";
-import { Api } from '../../config/ApiEDI';
+import { Api, generalRequest } from '../../config/Api';
 
 const baseURL = Api.url
 
@@ -7,7 +6,7 @@ export const HistorialCFDIService = {
     getHistorial: async (params: Object) => {
         params.table = "CFDITransferRegistro";
         try {
-            const response = await axios.post(`${baseURL}/edi/HistorialCFDI`, params);
+            const response = await generalRequest.post(`/edi/HistorialCFDI`, params);
             return response.data;
         } catch (error) {
             console.error('Error al enviar filtros:', error);

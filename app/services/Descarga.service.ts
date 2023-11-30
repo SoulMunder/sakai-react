@@ -1,13 +1,13 @@
 import axios from 'axios';
-import { ApiEDI } from '../config/ApiEDI';
+import { Api, generalRequest } from '../config/Api';
 
-const baseURL = ApiEDI.urlEDI;
+const baseURL = Api.url;
 
 export const downloadService = {
     downloadFile: async (rutaBCK: string, filename: string, extension: string) => {
         try {
             console.log(rutaBCK, filename, extension);
-            const response = await axios.get(`${baseURL}/Herrameintas?rutaBCK=${rutaBCK}&filename=${filename}&extension=${extension}`, {
+            const response = await generalRequest.get(`/Herramientas?rutaBCK=${rutaBCK}&filename=${filename}&extension=${extension}`, {
                 responseType: 'blob', // Indica que la respuesta es de tipo blob (archivo binario)
             });
 

@@ -1,10 +1,7 @@
 "use client"
 import moment from 'moment';
 import React, { useState, useEffect, lazy } from 'react';
-import {
-    DataTable, DataTableFilterMeta, DataTableSelectionChangeEvent, DataTableSelectAllChangeEvent,
-    DataTablePageEvent, DataTableSortEvent, DataTableFilterEvent
-} from 'primereact/datatable';
+import { DataTable } from 'primereact/datatable';
 import { Column, ColumnFilterElementTemplateOptions } from 'primereact/column';
 import { Ticket } from './Ticket.dto';
 import { Calendar, CalendarChangeEvent } from 'primereact/calendar';
@@ -96,9 +93,9 @@ export default function FillGrid() {
     // funcion para sacar los datos de la api
     const fetchData = async () => {
         setLoading(true);
-        if (lazyState.multiSortMeta) {
-            delete lazyState.multiSortMeta;
-        }
+        // if (lazyState.multiSortMeta) {
+        //     delete lazyState.multiSortMeta;
+        // }
         const response = await TicketService.getData(lazyState);
         const formattedData = getData(response.registrosPagina);
         obtenerData(formattedData);
@@ -159,15 +156,15 @@ export default function FillGrid() {
         let iconTooltip: string;
 
         if (rowData.Procesado === true) {
-            iconClass = 'pi pi-check'; // Icono de palomita
+            iconClass = 'pi pi-check';
             iconTooltip = 'Procesado';
-        } else if (rowData.Procesado === false) {
-            iconClass = 'pi pi-times'; // Icono de X
-            iconTooltip = 'No procesado';
+        } else if (rowData.Procesado === null) {
+            iconClass = 'pi pi-question';
+            iconTooltip = `${rowData.ProcesadoError}`;
         } else {
-            iconClass = 'pi pi-question'; // Icono de interrogación
-            iconTooltip = 'Pendiente';
-        }
+            iconClass = 'pi pi-times';
+            iconTooltip = `${rowData.ProcesadoError}`;
+        } 
 
         return (
             <div className="border-circle w-2rem h-2rem inline-flex font-bold justify-content-center align-items-center text-sm">
@@ -183,32 +180,13 @@ export default function FillGrid() {
         if (rowData.Enviado === true) {
             iconClass = 'pi pi-check';
             iconTooltip = 'Enviado';
-        } else if (rowData.Enviado === false) {
-            iconClass = 'pi pi-times';
-            iconTooltip = 'No Enviado';
-        } else {
+        } else if (rowData.Enviado === null) {
             iconClass = 'pi pi-question';
-            iconTooltip = 'Pendiente';
-        }
-
-        return (
-            <div className="border-circle w-2rem h-2rem inline-flex font-bold justify-content-center align-items-center text-sm">
-                <i className={iconClass} style={{ fontSize: '1rem' }} title={iconTooltip}></i>
-            </div>
-        );
-    };
-
-    const errorBodyTemplate = (rowData: Ticket) => {
-
-        let iconClass: string;
-        let iconTooltip: string;
-        if (rowData.ProcesadoError !== null) {
-            iconClass = 'pi pi-question';
-            iconTooltip = `${rowData.ProcesadoError}`;
+            iconTooltip = `${rowData.EnviadoError}`;
         } else {
             iconClass = 'pi pi-times';
-            iconTooltip = `${rowData.ProcesadoError}`;
-        }
+            iconTooltip = `${rowData.EnviadoError}`;
+        } 
 
         return (
             <div className="border-circle w-2rem h-2rem inline-flex font-bold justify-content-center align-items-center text-sm">
@@ -218,9 +196,9 @@ export default function FillGrid() {
     };
 
     // Modal para editar email
+    const [ticketDialog, setTicketDialog] = useState<boolean>(false);
+    const [ticket, setTicket] = useState({ email: '' });
     const sendEmailBodyTemplate = (rowData: Ticket) => {
-        const [ticketDialog, setTicketDialog] = useState<boolean>(false);
-        const [ticket, setTicket] = useState({ email: '' });
 
         const openNew = () => {
             setTicket({ email: rowData.Email });
@@ -393,7 +371,6 @@ export default function FillGrid() {
                 ))}
                 <Column field='Enviado' header='Enviado' filter body={sendBodyTemplate}></Column>
                 <Column field='Procesado' header='Procesado' filter body={procBodyTemplate}></Column>
-                <Column field='ProcesadoError' header='Error' filter body={errorBodyTemplate}></Column>
                 <Column
                     field="Fecha"
                     header="Fecha"
