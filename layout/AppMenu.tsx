@@ -21,7 +21,7 @@ const AppMenu = () => {
         },
         {
             label: 'Certificados',
-            items: [{ label: 'Certificados', icon: 'pi pi-building', to: '' }]
+            items: [{ label: 'Empresas disponibles', icon: 'pi pi-building', to: '' }]
         },
         {
             label: 'Addenda',
@@ -38,11 +38,11 @@ const AppMenu = () => {
                 { label: 'Documentos timbrados', icon: 'pi pi-bell', to: '' },
                 { label: 'Notas de venta', icon: 'pi pi-file', to: '' },
                 { label: 'Addenda comercial', icon: 'pi pi-file', to: '' },
-                { label: 'Reglas de distribución', icon: 'pi pi-file', to: '' }                
+                { label: 'Reglas de distribución', icon: 'pi pi-file', to: '' }
             ]
         },
         {
-            label: 'Cancelacion de facturas',
+            label: 'Cancelación de facturas',
             items: [
                 { label: 'Cargar layout', icon: 'pi pi-fw pi-upload', to: '' },
                 { label: 'Archivos cargados', icon: 'pi pi-file-o', to: '' },
@@ -50,16 +50,34 @@ const AppMenu = () => {
             ]
         },
         {
-            label: 'Adidas',
+            label: 'Edición de Addenda',
             items: [
-                { label: 'Tickets', icon: 'pi pi-fw pi-ticket', to: '/Tickets' },
+                {
+                    label: 'Corporación Sánchez',
+                    icon: 'pi pi-fw pi-bookmark',
+                    items: [
+                        {
+                            label: 'Carga de cross reference',
+                            icon: 'pi pi-fw pi-upload',
+                            items: [
+                                { label: 'Submenu 1.1.1', icon: 'pi pi-fw pi-bookmark' },
+                                { label: 'Submenu 1.1.2', icon: 'pi pi-fw pi-bookmark' },
+                                { label: 'Submenu 1.1.3', icon: 'pi pi-fw pi-bookmark' }
+                            ]
+                        },
+                        {
+                            label: 'Submenu 1.2',
+                            icon: 'pi pi-fw pi-bookmark',
+                            items: [{ label: 'Submenu 1.2.1', icon: 'pi pi-fw pi-bookmark' }]
+                        }
+                    ]
+                },
             ]
         },
         {
-            label: 'Cancelaciones',
+            label: 'Adidas',
             items: [
-                { label: 'PrimeIcons', icon: 'pi pi-fw pi-prime', to: '/utilities/icons' },
-                { label: 'PrimeFlex', icon: 'pi pi-fw pi-desktop', url: 'https://.org/', target: '_blank' }
+                { label: 'Tickets', icon: 'pi pi-fw pi-ticket', to: '/Tickets' },
             ]
         },
         {

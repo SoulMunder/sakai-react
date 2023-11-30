@@ -26,6 +26,8 @@ const LoginPage = () => {
         await loginService.handleLogin(username, password, event)
     };
 
+    
+
     return (
         <div className={containerClassName}>
             <div className="flex flex-column align-items-center justify-content-center">
@@ -63,6 +65,12 @@ const LoginPage = () => {
                                 </div>
                                 <Button type='submit' label="Ingresar" className="w-full p-3 text-xl" ></Button>
                                 {/* onClick={() => router.push('/')} */}
+                                <Button
+                                    label="Ingresar con Okta"
+                                    icon="pi pi-user"
+                                    className="w-full p-3 text-xl mt-2"
+                                    // onClick={loginWithOkta}
+                                />
                             </form>
                         </div>
                     </div>

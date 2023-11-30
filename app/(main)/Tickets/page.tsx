@@ -9,6 +9,7 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { TicketService } from './Ticket.service';
 import { sendEmailBodyTemplate, procBodyTemplate, sendBodyTemplate, downloadBodyTemplate } from './Config';
+import { getJwtClaims } from '../../services/Claims.service';
 
 export default function FillGrid() {
     // variables de lazy load
@@ -19,7 +20,7 @@ export default function FillGrid() {
         rows: 10,
         page: 0,
         table: "",
-        sortField: 'id',
+        sortField: 'Id',
         sortOrder: 1,
         filters: {
             Id: {
@@ -87,9 +88,9 @@ export default function FillGrid() {
     // funcion para sacar los datos de la api
     const fetchData = async () => {
         setLoading(true);
-        // if (lazyState.multiSortMeta) {
-        //     delete lazyState.multiSortMeta;
-        // }
+        if (lazyState.multiSortMeta) {
+            delete lazyState.multiSortMeta;
+        }
         const response = await TicketService.getData(lazyState);
         const formattedData = getData(response.registrosPagina);
         obtenerData(formattedData);
@@ -145,7 +146,7 @@ export default function FillGrid() {
         return <Calendar value={options.value} onChange={(e: CalendarChangeEvent) => options.filterCallback(e.value, options.index)} dateFormat="yy/mm/dd" placeholder="yyyy/mm/dd" mask="99/99/9999" />;
     };
 
-    
+
 
     // Columnas a mostrar
     const columns = [

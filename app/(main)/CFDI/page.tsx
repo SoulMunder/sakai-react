@@ -16,6 +16,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
 import { downloadService } from '../../services/Descarga.service';
+import { decodeToken, getJwtClaims } from '../../services/Claims.service';
 
 export default function LazyLoadDemo() {
     // variables de lazy load
@@ -119,6 +120,12 @@ export default function LazyLoadDemo() {
         if (lazyState.multiSortMeta) {
             delete lazyState.multiSortMeta;
         }
+        // const claims = getJwtClaims();
+        // if (claims) {
+        //     console.log('Claims del JWT:', claims);
+        //     // Puedes acceder a los claims y realizar acciones basadas en ellos
+        // }
+        const decodedToken = decodeToken();
         const response = await HistorialCFDIService.getHistorial(lazyState);
         const formattedData = getHistorial(response.registrosPagina);
         setHistorialCFDI(formattedData);
