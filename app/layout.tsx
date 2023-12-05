@@ -7,11 +7,18 @@ import 'primeicons/primeicons.css';
 import '../styles/layout/layout.scss';
 import '../styles/demo/Demos.scss';
 
+// Okta
+import { SessionProvider } from "next-auth/react"
+import { Session } from 'next-auth'
+
 interface RootLayoutProps {
     children: React.ReactNode;
+    session: Session;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+
+export default function RootLayout({ children, session }: RootLayoutProps) {
+    console.log("Session",session)
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
@@ -19,7 +26,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
             </head>
             <body>
                 <PrimeReactProvider>
-                    <LayoutProvider>{children}</LayoutProvider>
+                    <SessionProvider session={session} refetchInterval={5 * 60}>
+                        <LayoutProvider>{children}</LayoutProvider>
+                    </SessionProvider>
                 </PrimeReactProvider>
             </body>
         </html>

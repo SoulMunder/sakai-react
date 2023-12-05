@@ -9,7 +9,8 @@ import { LayoutContext } from '../../../../layout/context/layoutcontext';
 import { InputText } from 'primereact/inputtext';
 import { classNames } from 'primereact/utils';
 import { loginService } from './login.service';
-import axios from 'axios';
+import { signIn, signOut, useSession } from "next-auth/react"
+
 
 const LoginPage = () => {
     const [password, setPassword] = useState('');
@@ -20,13 +21,27 @@ const LoginPage = () => {
     const router = useRouter();
     const containerClassName = classNames('mt-2 surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
 
-    console.log(password)
-
     const handleSubmit = async (event: React.FormEvent) => {
         await loginService.handleLogin(username, password, event)
     };
 
-    
+    const { data: session, status } = useSession()
+
+    if (status === 'loading') {
+        return (
+            <>
+                Loading...
+            </>
+        )
+    }
+
+    if (session) {
+        return (
+            <>
+                You have logged in <button onClick={() => signOut()}>Sign out</button>
+            </>
+        )
+    }
 
     return (
         <div className={containerClassName}>
@@ -65,12 +80,19 @@ const LoginPage = () => {
                                 </div>
                                 <Button type='submit' label="Ingresar" className="w-full p-3 text-xl" ></Button>
                                 {/* onClick={() => router.push('/')} */}
+                                <div className="flex justify-content-center mt-5 mb-3">
+                                    <span className="">O si lo prefiere</span>
+                                </div>
                                 <Button
-                                    label="Ingresar con Okta"
-                                    icon="pi pi-user"
+                                    severity="info"
+                                    label="Inicie sesión con Okta"
+                                    icon="pi pi-check-circle"
                                     className="w-full p-3 text-xl mt-2"
-                                    // onClick={loginWithOkta}
+                                    onClick={() => signIn('okta')}
                                 />
+                                {/* <>
+                                    Not Logged In <button onClick={() => signIn('okta')}>Sign in</button>
+                                </> */}
                             </form>
                         </div>
                     </div>

@@ -11,6 +11,7 @@ import { LayoutContext } from '../../layout/context/layoutcontext';
 import Link from 'next/link';
 import { Demo } from '../../types/types';
 import { ChartData, ChartOptions } from 'chart.js';
+import { signIn, signOut, useSession } from "next-auth/react"
 
 const lineData: ChartData = {
     labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
@@ -40,6 +41,8 @@ const Dashboard = () => {
     const menu2 = useRef<Menu>(null);
     const [lineOptions, setLineOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
+
+
 
     const applyLightTheme = () => {
         const lineOptions: ChartOptions = {
@@ -124,9 +127,32 @@ const Dashboard = () => {
         });
     };
 
+    const { data: session, status } = useSession()
+
+    if (status === 'loading') {
+        return (
+            <>
+                Loading...
+            </>
+        )
+    }
+
+    if (session) {
+        return (
+            <>
+                You have logged in <button onClick={() => signOut()}>Sign out</button>
+            </>
+        )
+    }
+
     return (
         <div className="grid">
             <div className="col-12 lg:col-6 xl:col-3">
+
+                <>
+                    Not Logged In <button onClick={() => signIn('okta')}>Sign in</button>
+                </>
+
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">
                         <div>
