@@ -5,6 +5,8 @@ import { classNames } from 'primereact/utils';
 import React, { forwardRef, useContext, useImperativeHandle, useRef } from 'react';
 import { AppTopbarRef } from '../types/types';
 import { LayoutContext } from './context/layoutcontext';
+import { signOut, useSession } from 'next-auth/react';
+import { Tooltip } from 'primereact/tooltip';
 
 const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
     const { layoutConfig, layoutState, onMenuToggle, showProfileSidebar } = useContext(LayoutContext);
@@ -17,6 +19,8 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
         topbarmenu: topbarmenuRef.current,
         topbarmenubutton: topbarmenubuttonRef.current
     }));
+
+    const { data: session, status } = useSession()
 
     return (
         <div className="layout-topbar">
@@ -36,17 +40,20 @@ const AppTopbar = forwardRef<AppTopbarRef>((props, ref) => {
             </button>
 
             <div ref={topbarmenuRef} className={classNames('layout-topbar-menu', { 'layout-topbar-menu-mobile-active': layoutState.profileSidebarVisible })}>
-                <button type="button" className="p-link layout-topbar-button">
+                {/* <button type="button" className="p-link layout-topbar-button">
                     <i className="pi pi-calendar"></i>
                     <span>Calendar</span>
-                </button>
+                </button> */}
                 <button type="button" className="p-link layout-topbar-button">
                     <i className="pi pi-user"></i>
                     <span>Profile</span>
                 </button>
-                <button type="button" className="p-link layout-topbar-button">
-                    <i className="pi pi-cog"></i>
-                    <span>Settings</span>
+
+                <Tooltip target=".custom-target-icon" />
+
+                <button type="button" className="p-link layout-topbar-button" onClick={() => signOut()}>
+                    <i className="pi pi-power-off custom-target-icon" data-pr-position="top" data-pr-tooltip="Cerrar sesión"></i>
+                    <span>Cerrar sesión</span>
                 </button>
             </div>
         </div>

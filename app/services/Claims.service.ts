@@ -8,7 +8,7 @@ export const decodeToken = () => {
             console.log(decoded)
             // return decoded;
         } catch (error) {
-            // console.error('Error decoding token:', error);
+            console.error('Error decoding token:', error);
             // return null;
         }
     }

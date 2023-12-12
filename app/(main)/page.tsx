@@ -127,31 +127,23 @@ const Dashboard = () => {
         });
     };
 
-    const { data: session, status } = useSession()
+    // const { data: session, status } = useSession()
 
-    if (status === 'loading') {
-        return (
-            <>
-                Loading...
-            </>
-        )
-    }
-
-    if (session) {
-        return (
-            <>
-                You have logged in <button onClick={() => signOut()}>Sign out</button>
-            </>
-        )
-    }
+    // if (status === 'loading') {
+    //     return (
+    //         <>
+    //             Loading...
+    //         </>
+    //     )
+    // }
 
     return (
         <div className="grid">
             <div className="col-12 lg:col-6 xl:col-3">
 
-                <>
+                {/* <>
                     Not Logged In <button onClick={() => signIn('okta')}>Sign in</button>
-                </>
+                </> */}
 
                 <div className="card mb-0">
                     <div className="flex justify-content-between mb-3">

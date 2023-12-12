@@ -21,11 +21,20 @@ const LoginPage = () => {
     const router = useRouter();
     const containerClassName = classNames('mt-2 surface-ground flex align-items-center justify-content-center min-h-screen min-w-screen overflow-hidden', { 'p-input-filled': layoutConfig.inputStyle === 'filled' });
 
-    const handleSubmit = async (event: React.FormEvent) => {
-        await loginService.handleLogin(username, password, event)
+    const handleSubmit = async () => {
+
+        await signIn('credentials', {
+            username: username,
+            password: password,
+            redirect: true,
+            callbackUrl: "/"
+        });
     };
 
     const { data: session, status } = useSession()
+
+    console.log({ session })
+    // console.log({ status })
 
     if (status === 'loading') {
         return (
@@ -61,7 +70,7 @@ const LoginPage = () => {
                         </div>
 
                         <div>
-                            <form onSubmit={handleSubmit}>
+                            <div>
                                 <label htmlFor="email1" className="block text-900 text-xl font-medium mb-2">
                                     Usuario
                                 </label>
@@ -78,8 +87,8 @@ const LoginPage = () => {
                                         <label htmlFor="rememberme1">Mantener sesión iniciada</label>
                                     </div>
                                 </div>
-                                <Button type='submit' label="Ingresar" className="w-full p-3 text-xl" ></Button>
-                                {/* onClick={() => router.push('/')} */}
+                                <Button onClick={handleSubmit} label="Ingresar" className="w-full p-3 text-xl" ></Button>
+
                                 <div className="flex justify-content-center mt-5 mb-3">
                                     <span className="">O si lo prefiere</span>
                                 </div>
@@ -93,7 +102,7 @@ const LoginPage = () => {
                                 {/* <>
                                     Not Logged In <button onClick={() => signIn('okta')}>Sign in</button>
                                 </> */}
-                            </form>
+                            </div>
                         </div>
                     </div>
                 </div>

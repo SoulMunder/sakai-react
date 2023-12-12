@@ -5,7 +5,7 @@ import { generalRequest } from "../../../../config/Api";
 export const OktaService = {
     getCode: async (params: string) => {
         try {
-            const response = await generalRequest.get(`/Auth/GeTokenOkta?code=${params}`,);
+            const response = await generalRequest.get(`/Auth/GeTokenOkta?code=${params}`);
             return response.data;
         } catch (error) {
             console.error('Error', error);

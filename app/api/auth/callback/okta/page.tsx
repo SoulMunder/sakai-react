@@ -1,102 +1,100 @@
 'use client'
+import { LoginCallback } from "@okta/okta-react";
 import { useSearchParams } from "next/navigation";
 import { useEffect } from "react";
 import axios from "axios";
 import { OktaService } from "./Code.service";
+import { signIn, useSession } from "next-auth/react";
+import { useRouter } from "next/router";
+import { JwtPayload, decode } from "jsonwebtoken";
+import { getServerSession } from "next-auth";
 export default function Auth() {
 
   const searchParams = useSearchParams();
-  const code = searchParams.get("code") as string;
+  const code = searchParams?.get("code") as string;
+
+  const { data: session } = useSession();
+
+  console.log()
 
   const getToken = async () => {
     const response = await OktaService.getCode(code);
+    if (response) {
+      const data = decode(response.Token) as JwtPayload;
+      // console.log("Token decodificado", data);
+
+      const user = { ...data }
+      console.log(user)
+      // const session = await getServerSession(ctx.req, ctx.res, response); 
+    }
     console.log(response)
   }
 
   useEffect(() => {
-      if (code) {
-          getToken();
-      }
-  }, [code]);
-
-  // const getToken = async () => {
-
-  //     try {
-  //         const response = await axios.post(
-  //             process.env.NEXT_PUBLIC_OKTA_ISSUER + "/v1/token",
-  //             `grant_type=authorization_code&redirect_uri=${process.env.NEXT_PUBLIC_OKTA_CALLBACK}&code=${code}`,
-  //             {
-  //                 headers: {
-  //                     "Content-Type": "application/x-www-form-urlencoded",
-  //                     Authorization: 'Basic ' + 'MG9hOW02dXpvZ0w4UzJZM0Y2OTc6eVNSNHRFT1lyVnpKTE50dFBHdnlRczJiRnI2VTZEN2NyWUN5OHJIN251a3RSUG5QZGdMdENkRGRDZXgxN0hOUQ',
-  //                     Accept: "application/json",
-  //                 },
-  //             }
-  //         );
-
-  //         console.log(response.data);
-
-  //     } catch (error) {
-  //         console.error(error);
-  //     }
-
-  // };
-
-  // useEffect(() => {
-  //     if (code) {
-  //         getToken();
-  //     }
-  // }, [code]);
+    if (code) {
+      getToken();
+    }
+  }, []);
 
   return <div>Authenticating...</div>;
 
 }
 
-// pages/auth.tsx
+// pages/[id].tsx
 
-// import { GetServerSideProps } from 'next';
-// import axios from 'axios';
 
-// const Auth = () => {
-//   return <div>Authenticating...</div>;
+
+
+
+// import { getCsrfToken } from "next-auth/react"
+// import { hasAuthorizationCode } from "@okta/okta-auth-js"; 
+// import { useOktaAuth } from '@okta/okta-react';
+
+// // const oktaAuth = new Auth({issuer: "{ISSUER}", clientId: "{CLIENT_ID}"})
+  
+//   const token = await oktaAuth.token.getWithAuthorizationCode({
+//     code,
+//     scopes: [],
+//   })
+
+// export default function Callback() {
+//   getCsrfToken()
+//   return null
+// }
+
+
+
+
+
+
+
+
+// import { GetServerSideProps, NextPage } from 'next';
+// import { ParsedUrlQuery } from 'querystring';
+
+// interface PageProps {
+//   id: string;
+// }
+
+// const Page: NextPage<PageProps> = ({ id }) => {
+//   return (
+//     <div>
+//       <h1>Obteniendo parámetros de la URL del lado del servidor</h1>
+//       <p>ID: {id}</p>
+//     </div>
+//   );
 // };
 
-// export const getServerSideProps: GetServerSideProps = async (context) => {
-//   const code = context.query.code as string;
+// export const getServerSideProps: GetServerSideProps<PageProps, { id: string }> = async ({ params }) => {
+//   const id = params?.id as string;
 
-//   try {
-//     const encodedCredentials = Buffer.from(
-//       `${process.env.NEXT_PUBLIC_OKTA_CLIENT_ID}:${process.env.NEXT_PUBLIC_OKTA_CLIENT_SECRET}`
-//     ).toString('base64');
+//   // Aquí podrías realizar lógica adicional según tus necesidades.
 
-//     const response = await axios.post(
-//       `${process.env.NEXT_PUBLIC_OKTA_ISSUER}/v1/token`,
-//       `grant_type=authorization_code&redirect_uri=${process.env.NEXT_PUBLIC_OKTA_CALLBACK}&code=${code}`,
-//       {
-//         headers: {
-//           'Content-Type': 'application/x-www-form-urlencoded',
-//           Authorization: `Basic MG9hOW02dXpvZ0w4UzJZM0Y2OTc6eVNSNHRFT1lyVnpKTE50dFBHdnlRczJiRnI2VTZEN2NyWUN5OHJIN251a3RSUG5QZGdMdENkRGRDZXgxN0hOUQ`,
-//         },
-//       }
-//     );
-
-//     console.log(response.data);
-
-//     // Puedes pasar los datos de respuesta como props para ser utilizados en el componente Auth
-//     return {
-//       props: {},
-//     };
-//   } catch (error) {
-//     console.error(error);
-
-//     // Puedes redirigir a una página de error si algo sale mal
-//     return {
-//       redirect: {
-//         destination: '/error',
-//         permanent: false,
-//       },
-//     };
-//   }
+//   return {
+//     props: {
+//       id,
+//     },
+//   };
 // };
 
-// export default Auth;
+// export default Page;

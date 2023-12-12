@@ -1,10 +1,10 @@
 import axios, { AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from "axios"
 
 export const Api = {
-    url: "https:/localhost:7137/api"
+    url: "http://localhost:5276/api"
 }
 
-axios.defaults.baseURL = "https:/localhost:7137/api";
+axios.defaults.baseURL = "http://localhost:5276/api";
 
 interface GeneralRequest {
     get: (url: string, params?: object) => Promise<AxiosResponse<any>>,

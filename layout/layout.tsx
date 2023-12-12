@@ -2,6 +2,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { signIn, signOut, useSession } from "next-auth/react"
+
 import {
   useEventListener,
   useMountEffect,
@@ -19,6 +21,9 @@ import { usePathname, useSearchParams } from "next/navigation";
 
 
 const Layout = ({ children }: ChildContainerProps) => {
+
+  const { data: session, status } = useSession()
+
   const { layoutConfig, layoutState, setLayoutState } = useContext(LayoutContext);
   const { setRipple } = useContext(PrimeReactContext);
   const topbarRef = useRef<AppTopbarRef>(null);
@@ -142,21 +147,24 @@ const Layout = ({ children }: ChildContainerProps) => {
     "p-ripple-disabled": !layoutConfig.ripple,
   });
 
-  return (
-    <React.Fragment>
-      <div className={containerClass}>
-        <AppTopbar ref={topbarRef} />
-        <div ref={sidebarRef} className="layout-sidebar">
-          <AppSidebar />
+  if (session) {
+    return (
+      <React.Fragment>
+        <div className={containerClass}>
+          <AppTopbar ref={topbarRef} />
+          <div ref={sidebarRef} className="layout-sidebar">
+            <AppSidebar />
+          </div>
+          <div className="layout-main-container">
+            <div className="layout-main">{children}</div>
+            <AppFooter />
+          </div>
+          <div className="layout-mask"></div>
         </div>
-        <div className="layout-main-container">
-          <div className="layout-main">{children}</div>
-          <AppFooter />
-        </div>
-        <div className="layout-mask"></div>
-      </div>
-    </React.Fragment>
-  );
-};
+      </React.Fragment>
+    );
+  };
+}
+
 
 export default Layout;

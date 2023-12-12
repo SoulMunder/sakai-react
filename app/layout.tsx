@@ -16,20 +16,18 @@ interface RootLayoutProps {
     session: Session;
 }
 
-
 export default function RootLayout({ children, session }: RootLayoutProps) {
-    console.log("Session",session)
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
-                <link id="theme-css" href={`/themes/md-light-indigo/theme.css`} rel="stylesheet"></link>
+                <link id="theme-css" href={`/themes/lara-light-indigo/theme.css`} rel="stylesheet"></link>
             </head>
             <body>
-                <PrimeReactProvider>
-                    <SessionProvider session={session} refetchInterval={5 * 60}>
+                <SessionProvider session={session}>
+                    <PrimeReactProvider>
                         <LayoutProvider>{children}</LayoutProvider>
-                    </SessionProvider>
-                </PrimeReactProvider>
+                    </PrimeReactProvider>
+                </SessionProvider>
             </body>
         </html>
     );
