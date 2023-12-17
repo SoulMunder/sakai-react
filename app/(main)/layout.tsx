@@ -7,7 +7,7 @@ interface AppLayoutProps {
 
 export const metadata: Metadata = {
     title: 'EGRID',
-    description: 'The ultimate collection of design-agnostic, flexible and accessible React UI Components.',
+    description: 'Birnging busines together.',
     robots: { index: false, follow: false },
     viewport: { initialScale: 1, width: 'device-width' },
     openGraph: {

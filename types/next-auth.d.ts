@@ -9,6 +9,7 @@ declare module "next-auth" {
             unique_name: string;
             role: string;
             Cliente: string;
+            ClienteId: number;
             AccesoFacturacion: boolean | undefined;
             AccesoCancelaciones: boolean | undefined;
             AccesoEdicionAddenda: boolean | undefined;

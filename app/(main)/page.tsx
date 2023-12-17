@@ -42,8 +42,6 @@ const Dashboard = () => {
     const [lineOptions, setLineOptions] = useState<ChartOptions>({});
     const { layoutConfig } = useContext(LayoutContext);
 
-
-
     const applyLightTheme = () => {
         const lineOptions: ChartOptions = {
             plugins: {

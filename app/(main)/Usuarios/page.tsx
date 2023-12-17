@@ -1,55 +1,74 @@
 'use client'
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { classNames } from 'primereact/utils';
 import { DataTable } from 'primereact/datatable';
 import { Column } from 'primereact/column';
 import { Toast } from 'primereact/toast';
 import { Button } from 'primereact/button';
-import { Toolbar } from 'primereact/toolbar';
 import { InputText } from 'primereact/inputtext';
 import { Tag } from 'primereact/tag';
 import { Dialog } from 'primereact/dialog';
 import { Dropdown } from 'primereact/dropdown';
+import { ToggleButton, ToggleButtonChangeEvent } from 'primereact/togglebutton';
+import moment from 'moment';
+import { useSession } from 'next-auth/react';
+import { UsersService } from './User.service';
 
 export default function UsersTable() {
-    let emptyUser: User = {
-        id: null,
-        username: '',
-        status: 'activo',
-        dateAdded: new Date(),
-        role: '',
+
+    const { data: session } = useSession()
+
+    let id = session?.user.ClienteId;
+
+    let emptyUser: Usuario = {
+        Id: null,
+        UserName: '',
+        Password: '',
+        passTemp: '',
+        Activo: true,
+        FechaAlta: new Date(),
+        RolId: null,
+        ClienteId: id,
+        Correo: ''
     };
 
-    const [users, setUsers] = useState<User[]>([]);
+    const [users, setUsers] = useState<Usuario[]>([]);
+    const [user, setUser] = useState<Usuario>(emptyUser);
+    const [tempUser, setTempUser] = useState<Usuario>(emptyUser);
     const [userDialog, setUserDialog] = useState<boolean>(false);
     const [deleteUserDialog, setDeleteUserDialog] = useState<boolean>(false);
     const [deleteUsersDialog, setDeleteUsersDialog] = useState<boolean>(false);
-    const [user, setUser] = useState<User>(emptyUser);
+    const [editUserDialog, setEditUserDialog] = useState<boolean>(false);
     const [submitted, setSubmitted] = useState<boolean>(false);
     const [globalFilter, setGlobalFilter] = useState<string>('');
     const toast = useRef<Toast>(null);
 
+    const onInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, name: string) => {
+        const val = e.target.value;
+        setUser((prevUser) => ({ ...prevUser, [name]: val }));
+    };
+
+    const fetchData = useCallback(async () => {
+        try {
+            if (typeof id !== 'undefined') {
+                const response = await UsersService.getUsers(id);
+                setUsers(response);
+            } else {
+                console.error('id is undefined');
+            }
+        } catch (error) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Error al solicitar datos al servidor',
+                life: 3000,
+            });
+        }
+    }, [id]);
+
     useEffect(() => {
-        // Cambiar ProductService por el servicio que obtiene la lista de usuarios
-        // UserService.getUsers().then((data) => setUsers(data));
-        // Ejemplo de inicialización con datos de prueba
-        setUsers([
-            {
-                id: '1',
-                username: 'user1',
-                status: 'activo',
-                dateAdded: new Date(),
-                role: 'admin',
-            },
-            {
-                id: '2',
-                username: 'user2',
-                status: 'inactivo',
-                dateAdded: new Date(),
-                role: 'user',
-            },
-        ]);
-    }, []);
+        fetchData();
+    }, [fetchData]);
 
     const openNew = () => {
         setUser(emptyUser);
@@ -73,72 +92,146 @@ export default function UsersTable() {
     const saveUser = () => {
         setSubmitted(true);
 
-        if (user.username.trim()) {
-            let _users = [...users];
-            let _user = { ...user };
+        if (user.UserName.trim()) {
+            if (user.UserName.trim() && user.Password === user.passTemp) {
+                let _users = [...users];
+                // let _user = { ...user, RolId: selectedRole };
+                const _user: UserCreate = {
+                    UserName: user.UserName,
+                    Password: user.Password,
+                    FechaAlta: user.FechaAlta, // Convertir a cadena en formato ISO
+                    RolId: selectedRole,
+                    ClienteId: user.ClienteId,
+                    Correo: user.Correo,
+                };
 
-            if (user.id) {
-                const index = findIndexById(user.id);
+                UsersService.createUser(_user)
 
-                _users[index] = _user;
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Updated', life: 3000 });
+                setUserDialog(false);
+                fetchData();
+                setUser(emptyUser);
+                setUsers(_users);
+                // Lógica adicional para asegurar que 'password' y 'passwordConfirm' coincidan
             } else {
-                _user.id = createId();
-                _users.push(_user);
-                toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Created', life: 3000 });
+                // Muestra un mensaje de error si los campos no coinciden
+                toast.current?.show({
+                    severity: 'error',
+                    summary: 'Error',
+                    detail: 'Las contraseñas no coinciden',
+                    life: 3000,
+                });
             }
 
-            setUsers(_users);
             setUserDialog(false);
             setUser(emptyUser);
         }
     };
 
-    const editUser = (user: User) => {
-        setUser({ ...user });
-        setUserDialog(true);
+    const [currentPassword, setCurrentPassword] = useState('');
+    const [newPassword, setNewPassword] = useState('');
+    const [confirmNewPassword, setConfirmNewPassword] = useState('');
+
+
+    const editUser = (rowData: Usuario) => {
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        setUser({ ...rowData, passTemp: '', Password: '' });
+        // Poner en tempUser los datos del usuario seleccionado
+        setTempUser(rowData);
+        setSelectedRole(rowData.RolId);
+        setChecked(rowData.Activo);
+        // setUserDialog(true);
+        setEditUserDialog(true);
     };
 
-    const confirmDeleteUser = (user: User) => {
-        setUser(user);
+    const hideEditUserDialog = () => {
+        setSubmitted(false);
+        setEditUserDialog(false);
+    };
+
+
+    const saveUserEdited = async () => {
+        setSubmitted(true);
+
+        // Validar si la contraseña actual coincide con la ingresada
+        if (currentPassword !== tempUser.Password) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'La contraseña actual no coincide',
+                life: 3000,
+            });
+            return;
+        }
+
+        // Validar si las nuevas contraseñas coinciden
+        if (newPassword.trim() !== confirmNewPassword.trim()) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'Las nuevas contraseñas no son validas',
+                life: 3000,
+            });
+            return;
+        }
+        // validar que la nueva contraseña no sea igual a la actual
+        if (newPassword.trim() === currentPassword.trim()) {
+            toast.current?.show({
+                severity: 'error',
+                summary: 'Error',
+                detail: 'La nueva contraseña no puede ser igual a la actual',
+                life: 3000,
+            });
+            return;
+        }
+
+        const editedUser: Usuario = {
+            ...user,
+            Password: newPassword,
+            RolId: selectedRole,
+            Activo: checked,
+        };
+
+        console.log("Antes de editar", tempUser)
+        console.log("Usuario editado", editedUser)
+
+        // limpiar tempUser
+        setTempUser(emptyUser);
+        // limpiar editedUser
+        setUser(emptyUser);
+        // limpiar campos de contraseña
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmNewPassword('');
+        // cerrar dialogo
+        setEditUserDialog(false);
+    };
+
+    const editUserDialogFooter = (
+        <React.Fragment>
+            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideEditUserDialog} />
+            <Button label="Guardar" icon="pi pi-check" onClick={saveUserEdited} />
+        </React.Fragment>
+    );
+
+
+    const [userToDeleteId, setUserToDeleteId] = useState<number | null>(null);
+
+    const confirmDeleteUser = (rowData: Usuario) => {
+        setUserToDeleteId(rowData.Id)
+        console.log("id", userToDeleteId)
         setDeleteUserDialog(true);
     };
 
     const deleteUser = () => {
-        let _users = users.filter((val) => val.id !== user.id);
-
-        setUsers(_users);
+        if (userToDeleteId) {
+            UsersService.deleteUser(userToDeleteId)
+            toast.current?.show({ severity: 'success', summary: 'Completado', detail: 'Usuario eliminado', life: 3000 });
+        }
         setDeleteUserDialog(false);
-        setUser(emptyUser);
-        toast.current?.show({ severity: 'success', summary: 'Successful', detail: 'User Deleted', life: 3000 });
-    };
-
-    const findIndexById = (id: string) => {
-        let index = -1;
-
-        for (let i = 0; i < users.length; i++) {
-            if (users[i].id === id) {
-                index = i;
-                break;
-            }
-        }
-
-        return index;
-    };
-
-    const createId = (): string => {
-        let id = '';
-        let chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-
-        for (let i = 0; i < 5; i++) {
-            id += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
-
-        return id;
-    };
-
-    const confirmDeleteSelected = () => {
-        setDeleteUsersDialog(true);
+        fetchData();
+        setUserToDeleteId(null);
     };
 
     const header = (
@@ -148,7 +241,7 @@ export default function UsersTable() {
                 <i className="pi pi-search" />
                 <InputText
                     type="search"
-                    placeholder="Search..."
+                    placeholder="Buscar..."
                     onInput={(e) => {
                         const target = e.target as HTMLInputElement;
                         setGlobalFilter(target.value);
@@ -160,24 +253,27 @@ export default function UsersTable() {
 
     const userDialogFooter = (
         <React.Fragment>
-            <Button label="Cancel" icon="pi pi-times" outlined onClick={hideDialog} />
-            <Button label="Save" icon="pi pi-check" onClick={saveUser} />
+            <Button label="Cancelar" icon="pi pi-times" outlined onClick={hideDialog} />
+            <Button label="Guardar" icon="pi pi-check" onClick={saveUser} />
         </React.Fragment>
     );
 
     const deleteUserDialogFooter = (
         <React.Fragment>
             <Button label="No" icon="pi pi-times" outlined onClick={hideDeleteUserDialog} />
-            <Button label="Yes" icon="pi pi-check" severity="danger" onClick={deleteUser} />
+            <Button label="Eliminar" icon="pi pi-check" severity="danger" onClick={deleteUser} />
         </React.Fragment>
     );
 
-    const dateBodyTemplate = (rowData: User) => {
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return rowData.dateAdded.toLocaleDateString(undefined, options);
+    const dateBodyTemplate = (rowData: Usuario) => {
+        return formatDate(new Date(rowData.FechaAlta));
     };
 
-    const actionBodyTemplate = (rowData: User) => {
+    const formatDate = (value: Date) => {
+        return moment(value).format('YYYY/MM/DD');
+    };
+
+    const actionBodyTemplate = (rowData: Usuario) => {
         return (
             <React.Fragment>
                 <Button icon="pi pi-pencil" rounded outlined className="mr-2" onClick={() => editUser(rowData)} />
@@ -186,29 +282,51 @@ export default function UsersTable() {
         );
     };
 
-    const getSeverity = (user: User) => {
-        return user.status === 'activo' ? 'success' : 'danger';
+    const getSeverity = (user: Usuario) => {
+        return user.Activo === true ? 'success' : 'danger';
     };
 
-    const [selectedCity, setSelectedCity] = useState<City | null>(null);
-    const cities: City[] = [
-        { name: 'New York', code: 'NY' },
-        { name: 'Rome', code: 'RM' },
-        { name: 'London', code: 'LDN' },
-        { name: 'Istanbul', code: 'IST' },
-        { name: 'Paris', code: 'PRS' }
+    const statusBodyTemplate = (rowData: Usuario) => {
+        const statusText = rowData.Activo ? 'Activo' : 'Inactivo';
+
+        return (
+            <Tag value={statusText} severity={getSeverity(rowData)}></Tag>
+        );
+    };
+
+
+    const getRolSeverity = (user: Usuario) => {
+        return user.RolId === 1 ? 'primary' : 'success';
+    };
+
+    const rolBodyTemplate = (rowData: Usuario) => {
+        const statusText = rowData.RolId === 1 ? 'Administrador' : 'General';
+
+        return (
+            <Tag value={statusText} severity={getRolSeverity(rowData)}></Tag>
+        );
+    };
+
+
+    const [selectedRole, setSelectedRole] = useState<number | null>(null);
+    const roles = [
+        { label: 'Administrador', value: 1 },
+        { label: 'General', value: 2 },
     ];
 
+    const [checked, setChecked] = useState<boolean>(false);
 
     return (
         <div>
             <Toast ref={toast} />
             <div className="card">
-                <Toolbar className="mb-4" left={() => <Button label="Create New User" icon="pi pi-plus" severity="success" onClick={openNew} />} />
+                {/* <Toolbar className="mb-4" left={() => } /> */}
+                <Button label="Nuevo usuario" icon="pi pi-plus" onClick={openNew} className='mb-4' />
                 <DataTable
                     value={users}
-                    dataKey="id"
+                    dataKey="Id"
                     paginator
+                    size='small'
                     rows={10}
                     rowsPerPageOptions={[5, 10, 25]}
                     paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
@@ -216,40 +334,90 @@ export default function UsersTable() {
                     globalFilter={globalFilter}
                     header={header}
                 >
-                    <Column field="username" header="Usuario" sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column field="status" header="Estatus" body={(rowData) => <Tag value={rowData.status} severity={getSeverity(rowData)}></Tag>} style={{ minWidth: '12rem' }}></Column>
+                    <Column field="UserName" header="Usuario" sortable style={{ minWidth: '12rem' }}></Column>
+                    <Column field="Activo" header="Estatus" body={statusBodyTemplate} style={{ minWidth: '12rem' }}></Column>
                     <Column field="dateAdded" header="Fecha alta" body={dateBodyTemplate} sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column field="role" header="Rol" sortable style={{ minWidth: '12rem' }}></Column>
-                    <Column body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
+                    <Column field="RolId" header="Rol" sortable body={rolBodyTemplate} style={{ minWidth: '12rem' }}></Column>
+                    <Column header='Acciones' body={actionBodyTemplate} exportable={false} style={{ minWidth: '12rem' }}></Column>
                 </DataTable>
             </div>
-            <Dialog visible={userDialog} style={{ width: '32rem' }} header="User Details" modal className="p-fluid" footer={userDialogFooter} onHide={hideDialog}>
-                <div className="field">
-                    <label htmlFor="username" className="font-bold">
-                        Nombre de usuario
-                    </label>
-                    <InputText
-                        id="username"
-                        value={user.username}
-                        onChange={(e) => onInputChange(e, 'username')}
-                        required
-                        autoFocus
-                        className={classNames({ 'p-invalid': submitted && !user.username })}
-                    />
+            <Dialog visible={userDialog} style={{ width: '32rem' }} header="Crear usuario" modal className="p-fluid" footer={userDialogFooter} onHide={hideDialog}>
+                <div className="flex flex-wrap gap-3 mt-5">
 
-                    <div className="card flex justify-content-center">
-                        <Dropdown value={selectedCity} onChange={(e) => setSelectedCity(e.value)} options={cities} optionLabel="name"
-                            placeholder="Select a City" className="w-full md:w-14rem" />
+                    <div className='w-full'>
+                        <label htmlFor="email" className="font-bold block mb-2">
+                            Correo electrónico
+                        </label>
+                        <InputText
+                            id="email"
+                            value={user.Correo}
+                            onChange={(e) => onInputChange(e, 'Correo')}
+                        />
                     </div>
 
-                    {submitted && !user.username && <small className="p-error">Username is required.</small>}
+                    <div className="flex-auto">
+                        <label htmlFor="username" className="font-bold block mb-2">
+                            Nombre de usuario
+                        </label>
+                        <InputText
+                            id="username"
+                            value={user.UserName}
+                            onChange={(e) => onInputChange(e, 'UserName')}
+                            required
+                            autoFocus
+                            autoComplete="off"
+                            className={classNames({ 'p-invalid': submitted && !user.UserName })}
+                        />
+                        {submitted && !user.UserName && <small className="p-error flex-auto">El nombre de usuario es requerido.</small>}
+                    </div>
+                    <div className="flex-auto">
+                        <label htmlFor="rol" className="font-bold block mb-2">
+                            Rol
+                        </label>
+                        <Dropdown
+                            id="role"
+                            value={selectedRole}
+                            options={roles}
+                            onChange={(e) => setSelectedRole(e.value)}
+                            placeholder="Seleccione un rol"
+                        />
+                    </div>
+
+                    <div className="flex-auto">
+                        <label htmlFor="Password" className="font-bold block mb-2">
+                            Contraseña
+                        </label>
+                        <InputText
+                            id="Password"
+                            type="password"
+                            value={user.Password}
+                            onChange={(e) => onInputChange(e, 'Password')}
+                            required
+                        />
+                    </div>
+
+                    <div className="flex-auto">
+                        <label htmlFor="passTemp" className="font-bold block mb-2">
+                            Confirmar Contraseña
+                        </label>
+                        <InputText
+                            id="passTemp"
+                            type="password"
+                            value={user.passTemp}
+                            onChange={(e) => onInputChange(e, 'passTemp')}
+                            required
+                        />
+                    </div>
+
+                    <div className="flex justify-content-center">
+                        <ToggleButton onLabel="Activo" offLabel="Inactivo" checked={checked} onChange={(e: ToggleButtonChangeEvent) => setChecked(e.value)} className="w-8rem" />
+                    </div>
                 </div>
-                {/* Resto del código sigue igual... */}
             </Dialog>
             <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} header="Confirm" modal footer={deleteUserDialogFooter} onHide={hideDeleteUserDialog}>
                 <div className="confirmation-content">
                     <i className="pi pi-exclamation-triangle mr-3" style={{ fontSize: '2rem' }} />
-                    {user && <span>Are you sure you want to delete <b>{user.username}</b>?</span>}
+                    {user && <span>Esta seguro que desea eliminar el usuario <b>{user.UserName}</b>?</span>}
                 </div>
             </Dialog>
             <Dialog visible={deleteUsersDialog} style={{ width: '32rem' }} header="Confirm" modal onHide={hideDeleteUsersDialog}>
@@ -258,6 +426,100 @@ export default function UsersTable() {
                     {user && <span>Are you sure you want to delete the selected users?</span>}
                 </div>
             </Dialog>
+
+
+            <Dialog visible={editUserDialog} style={{ width: '32rem' }} header="Editar usuario" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
+                <div className="flex flex-wrap gap-3 mt-5">
+                    <div className='w-full'>
+                        <label htmlFor="email" className="font-bold block mb-2">
+                            Correo electrónico
+                        </label>
+                        <InputText
+                            id="email"
+                            value={user.Correo}
+                            onChange={(e) => onInputChange(e, 'Correo')}
+                        />
+                    </div>
+
+                    <div className="flex-auto">
+                        <label htmlFor="username" className="font-bold block mb-2">
+                            Nombre de usuario
+                        </label>
+                        <InputText
+                            id="username"
+                            value={user.UserName}
+                            onChange={(e) => onInputChange(e, 'UserName')}
+                            required
+                            autoFocus
+                            autoComplete="off"
+                            className={classNames({ 'p-invalid': submitted && !user.UserName })}
+                        />
+                        {submitted && !user.UserName && <small className="p-error flex-auto">El nombre de usuario es requerido.</small>}
+                    </div>
+                    <div className="flex-auto">
+                        <label htmlFor="rol" className="font-bold block mb-2">
+                            Rol
+                        </label>
+                        <Dropdown
+                            id="role"
+                            value={selectedRole}
+                            options={roles}
+                            onChange={(e) => setSelectedRole(e.value)}
+                            placeholder="Seleccione un rol"
+                        />
+                    </div>
+
+                    <div className="flex-auto">
+                        <label htmlFor="currentPassword" className="font-bold block mb-2">
+                            Contraseña Actual
+                        </label>
+                        <InputText
+                            id="currentPassword"
+                            type="password"
+                            value={currentPassword}
+                            onChange={e => setCurrentPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="flex-auto">
+                        <label htmlFor="newPassword" className="font-bold block mb-2">
+                            Nueva Contraseña
+                        </label>
+                        <InputText
+                            id="newPassword"
+                            type="password"
+                            value={newPassword}
+                            onChange={e => setNewPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="flex-auto">
+                        <label htmlFor="confirmPassword" className="font-bold block mb-2">
+                            Confirmar Contraseña
+                        </label>
+                        <InputText
+                            id="confirmPassword"
+                            type="password"
+                            value={confirmNewPassword}
+                            onChange={e => setConfirmNewPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+
+                    <div className="flex justify-content-center">
+                        <ToggleButton
+                            onLabel="Activo"
+                            offLabel="Inactivo"
+                            checked={checked}
+                            onChange={(e) => setChecked(e.value)}
+                            className="w-8rem"
+                        />
+                    </div>
+                </div>
+            </Dialog>
+
         </div>
     );
 }
