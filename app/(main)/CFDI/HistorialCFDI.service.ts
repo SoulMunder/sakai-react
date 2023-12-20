@@ -4,6 +4,7 @@ const baseURL = Api.url
 
 export const HistorialCFDIService = {
     getHistorial: async (params: Object) => {
+        console.log("filtros:", params)
         params.table = "CFDITransferRegistro";
         try {
             const response = await generalRequest.post(`/edi/HistorialCFDI`, params);

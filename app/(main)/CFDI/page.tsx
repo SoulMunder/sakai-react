@@ -16,7 +16,7 @@ import { InputTextarea } from 'primereact/inputtextarea';
 import { Dropdown } from 'primereact/dropdown';
 import { classNames } from 'primereact/utils';
 import { downloadService } from '../../services/Descarga.service';
-import { decodeToken, getJwtClaims } from '../../services/Claims.service';
+import { decodeToken } from '../../services/Claims.service';
 
 export default function LazyLoadDemo() {
     // variables de lazy load
@@ -34,78 +34,98 @@ export default function LazyLoadDemo() {
         filters: {
             Id: {
                 operator: FilterOperator.AND,
+                filterType: 'number',
                 constraints: [{ value: '415', matchMode: FilterMatchMode.STARTS_WITH }],
             },
             RfcEmisor: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             NombreEmisor: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             RfcReceptor: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             NombreReceptor: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             Serie: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             Folio: {
                 operator: FilterOperator.AND,
+                filterType: 'number',
                 constraints: [{ value: null, matchMode: FilterMatchMode.CONTAINS }],
             },
             DirXml: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             OldFileName: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             NewFileName: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             Fecha: {
                 operator: FilterOperator.AND,
+                filterType: 'date',
                 constraints: [{ value: null, matchMode: FilterMatchMode.DATE_IS }],
             },
             Hora: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             Uuid: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             Alertado: {
                 operator: FilterOperator.AND,
+                filterType: 'boolean',
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
             AlertadoFecha: {
                 operator: FilterOperator.AND,
+                filterType: 'date',
                 constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
             },
             AlertadoHora: {
                 operator: FilterOperator.AND,
+                filterType: 'date',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             Respuesta: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
             FechaRespuesta: {
                 operator: FilterOperator.AND,
-                constraints: [{ value: null, matchMode: FilterMatchMode.EQUALS }],
+                constraints: [{ value: null,
+                filterType: 'date',    
+                matchMode: FilterMatchMode.EQUALS }],
             },
             HoraRespuesta: {
                 operator: FilterOperator.AND,
+                filterType: 'string',
                 constraints: [{ value: null, matchMode: FilterMatchMode.STARTS_WITH }],
             },
         }
@@ -117,14 +137,11 @@ export default function LazyLoadDemo() {
     // funcion para sacar los datos de la api
     const fetchDataCFDI = async () => {
         setLoading(true);
-        if (lazyState.multiSortMeta) {
+        // verificar si existe el atributo multiSortMeta en el lazyState y eliminarlo
+        if (lazyState.hasOwnProperty('multiSortMeta')) {
+            // @ts-ignore
             delete lazyState.multiSortMeta;
         }
-        // const claims = getJwtClaims();
-        // if (claims) {
-        //     console.log('Claims del JWT:', claims);
-        //     // Puedes acceder a los claims y realizar acciones basadas en ellos
-        // }
         const decodedToken = decodeToken();
         const response = await HistorialCFDIService.getHistorial(lazyState);
         const formattedData = getHistorial(response.registrosPagina);
@@ -207,10 +224,6 @@ export default function LazyLoadDemo() {
 
     const [value, setValue] = useState('');
 
-    // const foliosFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
-    //     return <InputTextarea value={value} onChange={(e) => setValue(e.target.value)} rows={5} cols={30} placeholder='111111,222222,333333...'/>
-    // };
-
     const foliosFilterTemplate = (options: ColumnFilterElementTemplateOptions) => {
         return (
             <InputTextarea
@@ -269,20 +282,6 @@ export default function LazyLoadDemo() {
     const downloadFunction = async (rutaBCK: string, filename: string, extension: string) => {
 
         var archivo =  await downloadService.downloadFile(rutaBCK, filename, extension);
-
-        // fetch(`servidor/ruta_de_descarga?id=${id}&rfc=${rfc}&folio=${folio}`)
-        //     .then((response) => {
-        //         // Manejar la respuesta del servidor
-        //         if (response.ok) {
-        //             // Éxito, puedes manejar la respuesta como sea necesario
-        //         } else {
-        //             // Error, manejar el error según tus necesidades
-        //         }
-        //     })
-        //     .catch((error) => {
-        //         // Manejar errores de red u otros errores
-        //         console.error('Error en la petición:', error);
-        //     });
     };
 
     // Columnas a mostrar
@@ -297,15 +296,7 @@ export default function LazyLoadDemo() {
         { field: 'DirXml', header: 'Dir XML', filter: true },
         { field: 'OldFileName', header: 'Old File Name', filter: true },
         { field: 'NewFileName', header: 'New File Name', filter: true },
-        // { field: 'fecha', header: 'Fecha', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
-        // { field: 'hora', header: 'Hora', filter: true },
         { field: 'Uuid', header: 'UUID', filter: true },
-        // { field: 'alertado', header: 'Alertado', filter: true },
-        // { field: 'alertadoFecha', header: 'Alertado Fecha', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
-        // { field: 'alertadoHora', header: 'Alertado Hora', filter: true },
-        // { field: 'respuesta', header: 'Respuesta', filter: true },
-        // { field: 'fechaRespuesta', header: 'Fecha Respuesta', filter: true, dataType: 'date', bodyTemplate: dateBodyTemplate, filterElement: dateFilterTemplate },
-        // { field: 'horaRespuesta', header: 'Hora Respuesta', filter: true },
     ];
 
 
@@ -365,15 +356,6 @@ export default function LazyLoadDemo() {
             >
                 {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} /> */}
                 <Column field="Id" header="Id" filter sortable></Column>
-                {/* <Column selectionMode="multiple" headerStyle={{ width: '3rem' }} />
-                <Column field="id" header="Id" filter sortable></Column>
-                <Column field="rfcReceptor" header="Rfc Receptor" filter filterPlaceholder="Search" ></Column>
-                <Column field="nombreReceptor" header="Nombre del receptor" filter filterPlaceholder="Search" ></Column>
-                <Column field="rfcEmisor" header="Rfc emisor" filter filterPlaceholder="Search" ></Column>
-                <Column field="nombreEmisor" header="Nombre emisor" filter filterPlaceholder="Search" ></Column>
-                <Column field="serie" header="Serie" filter filterPlaceholder="Search" ></Column>
-                <Column field="folio" header="Folio" filter filterPlaceholder="Search" ></Column>
-                <Column field="fecha" header="Fecha" dataType="date" body={dateBodyTemplate} filter filterElement={dateFilterTemplate} ></Column> */}
 
                 {visibleColumns.map((col) => (
                     <Column key={col.field} field={col.field} header={col.header} filter={col.filter} />

@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react';
 
 export default function AdvanceDemo() {
 
-    const toast = useRef(null); // Agrega la referencia al componente Toast
+    const toast = useRef<Toast>(null); // Agrega la referencia al componente Toast
 
     const { data: session } = useSession()
     const id = session?.user.ClienteId;
@@ -39,11 +39,11 @@ export default function AdvanceDemo() {
                 // toast.current.show({ severity: 'success', summary: 'File(s) Uploaded Successfully', detail: '' });
                 if (response != null && response.status === 200) {
                     // const result = await response.json();
-                    toast.current.show({ severity: 'success', summary: 'Subida de archivos exitosa', detail: `Se ha(n) almacenado ${response.data} archivo(s)` });
+                    toast.current?.show({ severity: 'success', summary: 'Subida de archivos exitosa', detail: `Se ha(n) almacenado ${response.data} archivo(s)` });
                 } else {
                     // La respuesta no es exitosa, muestra un mensaje de error
                     // const errorResponse = await response.json();
-                    toast.current.show({ severity: 'error', summary: 'Error', detail: response });
+                    toast.current?.show({ severity: 'error', summary: 'Error', detail: response });
                 }
                 console.log(response);
             } catch (error) {
@@ -51,7 +51,7 @@ export default function AdvanceDemo() {
 
                 // Muestra un mensaje de error
                 // toast.current.show({ severity: 'error', summary: 'Error', detail: 'File upload failed' });
-                toast.current.show({ severity: 'error', summary: 'Error', detail: 'Fallo al subir archivo(s)' });
+                toast.current?.show({ severity: 'error', summary: 'Error', detail: 'Fallo al subir archivo(s)' });
             }
         }
     };

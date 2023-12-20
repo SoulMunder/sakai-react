@@ -37,6 +37,7 @@ const baseURL = Api.url;
 
 export const TicketService = {
     getData: async (params: Object) => {
+        console.log(params)
         params.table = "Tk_Recepcion";
         try {
             const response = await generalRequest.post(`/Ticket/FillGridTk_recepcion`, params);

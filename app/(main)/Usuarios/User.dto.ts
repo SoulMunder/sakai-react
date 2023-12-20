@@ -18,3 +18,12 @@ interface UserCreate {
     ClienteId?: number | null;
     Correo: string;
 }
+
+interface UserEdit {
+    Id: number | null;
+    UserName: string;
+    Password: string | null;
+    RolId: number | null;
+    Activo: boolean;
+    Correo: string;
+}

@@ -29,12 +29,12 @@ export const UsersService = {
             throw error;
         }
     },
-    updateUser: async (id: number, usuario: Usuario) => {
+    updateUser: async (usuario: UserEdit) => {
         try {
             const response = await generalRequest.put(`/Usuarios/${usuario.Id}`, usuario);
             return response.data;
         } catch (error) {
-            console.error('Error al obtener usuarios', error);
+            console.error('Error al editar usuario', error);
             throw error;
         }
     }

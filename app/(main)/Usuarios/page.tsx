@@ -13,6 +13,7 @@ import { ToggleButton, ToggleButtonChangeEvent } from 'primereact/togglebutton';
 import moment from 'moment';
 import { useSession } from 'next-auth/react';
 import { UsersService } from './User.service';
+import { Password } from 'primereact/password';
 
 export default function UsersTable() {
 
@@ -34,7 +35,7 @@ export default function UsersTable() {
 
     const [users, setUsers] = useState<Usuario[]>([]);
     const [user, setUser] = useState<Usuario>(emptyUser);
-    const [tempUser, setTempUser] = useState<Usuario>(emptyUser);
+    const [tempUser, setTempUser] = useState<UserEdit>();
     const [userDialog, setUserDialog] = useState<boolean>(false);
     const [deleteUserDialog, setDeleteUserDialog] = useState<boolean>(false);
     const [deleteUsersDialog, setDeleteUsersDialog] = useState<boolean>(false);
@@ -89,7 +90,7 @@ export default function UsersTable() {
         setDeleteUsersDialog(false);
     };
 
-    const saveUser = () => {
+    const saveUser = async() => {
         setSubmitted(true);
 
         if (user.UserName.trim()) {
@@ -105,7 +106,7 @@ export default function UsersTable() {
                     Correo: user.Correo,
                 };
 
-                UsersService.createUser(_user)
+                await UsersService.createUser(_user)
 
                 setUserDialog(false);
                 fetchData();
@@ -127,22 +128,12 @@ export default function UsersTable() {
         }
     };
 
-    const [currentPassword, setCurrentPassword] = useState('');
-    const [newPassword, setNewPassword] = useState('');
-    const [confirmNewPassword, setConfirmNewPassword] = useState('');
-
-
     const editUser = (rowData: Usuario) => {
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmNewPassword('');
-        setUser({ ...rowData, passTemp: '', Password: '' });
-        // Poner en tempUser los datos del usuario seleccionado
-        setTempUser(rowData);
         setSelectedRole(rowData.RolId);
         setChecked(rowData.Activo);
-        // setUserDialog(true);
+        setUser({ ...rowData })
         setEditUserDialog(true);
+        console.log("Antes de editar", rowData)
     };
 
     const hideEditUserDialog = () => {
@@ -150,60 +141,49 @@ export default function UsersTable() {
         setEditUserDialog(false);
     };
 
-
     const saveUserEdited = async () => {
         setSubmitted(true);
 
-        // Validar si la contraseña actual coincide con la ingresada
-        if (currentPassword !== tempUser.Password) {
+        // validar que el campo Password no este vacio
+        if (user.Password === '') {
             toast.current?.show({
                 severity: 'error',
                 summary: 'Error',
-                detail: 'La contraseña actual no coincide',
+                detail: 'La contraseña no puede estar vacia',
                 life: 3000,
             });
             return;
         }
 
-        // Validar si las nuevas contraseñas coinciden
-        if (newPassword.trim() !== confirmNewPassword.trim()) {
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'Las nuevas contraseñas no son validas',
-                life: 3000,
-            });
-            return;
-        }
-        // validar que la nueva contraseña no sea igual a la actual
-        if (newPassword.trim() === currentPassword.trim()) {
-            toast.current?.show({
-                severity: 'error',
-                summary: 'Error',
-                detail: 'La nueva contraseña no puede ser igual a la actual',
-                life: 3000,
-            });
-            return;
-        }
-
-        const editedUser: Usuario = {
-            ...user,
-            Password: newPassword,
+        const userEdited: UserEdit = {
+            Id: user.Id,
+            UserName: user.UserName,
+            Password: user.Password,
             RolId: selectedRole,
             Activo: checked,
+            Correo: user.Correo,
         };
 
-        console.log("Antes de editar", tempUser)
-        console.log("Usuario editado", editedUser)
+        console.log("Usuario editado", userEdited)
+
+        await UsersService.updateUser(userEdited)
+
+        toast.current?.show({
+            severity: 'success',
+            summary: 'Completado',
+            detail: 'Usuario editado correctamente',
+            life: 3000,
+        });
+
+        // actualizar users
+        let _users = [...users];
+        fetchData();
+        setUser(emptyUser);
+        setUsers(_users);
 
         // limpiar tempUser
         setTempUser(emptyUser);
         // limpiar editedUser
-        setUser(emptyUser);
-        // limpiar campos de contraseña
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmNewPassword('');
         // cerrar dialogo
         setEditUserDialog(false);
     };
@@ -224,9 +204,9 @@ export default function UsersTable() {
         setDeleteUserDialog(true);
     };
 
-    const deleteUser = () => {
+    const deleteUser = async() => {
         if (userToDeleteId) {
-            UsersService.deleteUser(userToDeleteId)
+            await UsersService.deleteUser(userToDeleteId)
             toast.current?.show({ severity: 'success', summary: 'Completado', detail: 'Usuario eliminado', life: 3000 });
         }
         setDeleteUserDialog(false);
@@ -387,11 +367,12 @@ export default function UsersTable() {
                         <label htmlFor="Password" className="font-bold block mb-2">
                             Contraseña
                         </label>
-                        <InputText
+                        <Password
                             id="Password"
                             type="password"
                             value={user.Password}
                             onChange={(e) => onInputChange(e, 'Password')}
+                            toggleMask
                             required
                         />
                     </div>
@@ -400,18 +381,19 @@ export default function UsersTable() {
                         <label htmlFor="passTemp" className="font-bold block mb-2">
                             Confirmar Contraseña
                         </label>
-                        <InputText
+                        <Password
                             id="passTemp"
                             type="password"
                             value={user.passTemp}
+
                             onChange={(e) => onInputChange(e, 'passTemp')}
                             required
                         />
                     </div>
 
-                    <div className="flex justify-content-center">
+                    {/* <div className="flex justify-content-center">
                         <ToggleButton onLabel="Activo" offLabel="Inactivo" checked={checked} onChange={(e: ToggleButtonChangeEvent) => setChecked(e.value)} className="w-8rem" />
-                    </div>
+                    </div> */}
                 </div>
             </Dialog>
             <Dialog visible={deleteUserDialog} style={{ width: '32rem' }} header="Confirm" modal footer={deleteUserDialogFooter} onHide={hideDeleteUserDialog}>
@@ -430,6 +412,7 @@ export default function UsersTable() {
 
             <Dialog visible={editUserDialog} style={{ width: '32rem' }} header="Editar usuario" modal className="p-fluid" footer={editUserDialogFooter} onHide={hideEditUserDialog}>
                 <div className="flex flex-wrap gap-3 mt-5">
+
                     <div className='w-full'>
                         <label htmlFor="email" className="font-bold block mb-2">
                             Correo electrónico
@@ -470,53 +453,25 @@ export default function UsersTable() {
                     </div>
 
                     <div className="flex-auto">
-                        <label htmlFor="currentPassword" className="font-bold block mb-2">
-                            Contraseña Actual
+                        <label htmlFor="Password" className="font-bold block mb-2">
+                            Contraseña
                         </label>
-                        <InputText
-                            id="currentPassword"
+                        <Password
+                            id="Password"
                             type="password"
-                            value={currentPassword}
-                            onChange={e => setCurrentPassword(e.target.value)}
+                            value={user.Password}
+                            onChange={(e) => onInputChange(e, 'Password')}
+                            toggleMask
                             required
                         />
                     </div>
 
                     <div className="flex-auto">
-                        <label htmlFor="newPassword" className="font-bold block mb-2">
-                            Nueva Contraseña
-                        </label>
-                        <InputText
-                            id="newPassword"
-                            type="password"
-                            value={newPassword}
-                            onChange={e => setNewPassword(e.target.value)}
-                            required
-                        />
+                        <div className="flex mt-4">
+                            <ToggleButton onLabel="Activo" offLabel="Inactivo" checked={checked} onChange={(e: ToggleButtonChangeEvent) => setChecked(e.value)} className="w-8rem" />
+                        </div>
                     </div>
 
-                    <div className="flex-auto">
-                        <label htmlFor="confirmPassword" className="font-bold block mb-2">
-                            Confirmar Contraseña
-                        </label>
-                        <InputText
-                            id="confirmPassword"
-                            type="password"
-                            value={confirmNewPassword}
-                            onChange={e => setConfirmNewPassword(e.target.value)}
-                            required
-                        />
-                    </div>
-
-                    <div className="flex justify-content-center">
-                        <ToggleButton
-                            onLabel="Activo"
-                            offLabel="Inactivo"
-                            checked={checked}
-                            onChange={(e) => setChecked(e.value)}
-                            className="w-8rem"
-                        />
-                    </div>
                 </div>
             </Dialog>
 

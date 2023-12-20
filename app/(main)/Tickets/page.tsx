@@ -9,7 +9,6 @@ import { FilterMatchMode, FilterOperator } from 'primereact/api';
 import { MultiSelect, MultiSelectChangeEvent } from 'primereact/multiselect';
 import { TicketService } from './Ticket.service';
 import { sendEmailBodyTemplate, procBodyTemplate, sendBodyTemplate, downloadBodyTemplate } from './Config';
-import { getJwtClaims } from '../../services/Claims.service';
 
 export default function FillGrid() {
     // variables de lazy load

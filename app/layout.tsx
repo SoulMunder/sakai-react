@@ -20,7 +20,6 @@ export default function RootLayout({ children, session }: RootLayoutProps) {
     return (
         <html lang="en" suppressHydrationWarning>
             <head>
-                {/* lara-light-indigo */}
                 <link id="theme-css" href={`/themes/lara-light-blue/theme.css`} rel="stylesheet"></link>
             </head>
             <body>
